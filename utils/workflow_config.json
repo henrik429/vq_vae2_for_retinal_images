@@ -1,0 +1,10 @@
+{
+    "N_AUGMENTATION": 0,
+    "FLIP": 0,
+    "MAX_ROTATION_ANGLE": 14,
+    "NETWORKNAME": "vq_vae2",
+    "PATH_PREFIX": ".",
+    "PORT": 2000,
+    "RESIZE": [128, 128],
+    "min_max_width_height_ratio": [0.8, 1.2]
+}

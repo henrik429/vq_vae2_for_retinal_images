@@ -1,0 +1,171 @@
+{
+   "-input": {
+    "short": "-i",
+    "value": "/home/henrik/PycharmProjects/vq_vae_for_retinal_images/data/processed/training/0-augmentation_maxdegree_9_resize_128_128_exclude_0.8_1.2",
+    "help": "Absolute Path for Image Directory of Train Data",
+    "type": "str"
+  },
+  "-valid": {
+    "short": "-v",
+    "value": "/home/henrik/PycharmProjects/vq_vae_for_retinal_images/data/processed/training/0-augmentation_maxdegree_9_resize_128_128_exclude_0.8_1.2",
+    "help": "Absolute Path for Image Directory of Valid Data",
+    "type": "str"
+  },
+    "-test": {
+    "short": "-t",
+    "value": "/home/henrik/PycharmProjects/vq_vae_for_retinal_images/data/processed/training/0-augmentation_maxdegree_9_resize_128_128_exclude_0.8_1.2",
+    "help": "Absolute Path for Image Directory of Test Data",
+    "type": "str"
+  },
+  "-csv": {
+    "short": "-csv",
+    "value": "/home/henrik/PycharmProjects/vq_vae_for_retinal_images/data/trainLabels.csv",
+    "help": "Preprocessed annotations",
+    "type": "str"
+  },
+  "-mode": {
+    "short": "-mode",
+    "value": 1,
+    "help": "VQ-VAE (1) or VQ-VAE-2 (2)",
+    "type": "int"
+  },
+  "-size_latent_space": {
+    "short": "-size",
+    "value": 32,
+    "help": "Must be powered by 2. ",
+    "type": "int"
+  },
+  "-size_latent_space_top": {
+    "short": "-size_top",
+    "value": 32,
+    "help": "Must be powered by 2. ",
+    "type": "int"
+  },
+  "-size_latent_space_bottom": {
+    "short": "-size_bottom",
+    "value": 64,
+    "help": "Must be powered by 2.",
+    "type": "int"
+  },
+    "-path_prefix": {
+    "short": "-pp",
+    "value": ".",
+    "help": "Path prrefix.",
+    "type": "str"
+  },
+  "-network_name": {
+    "short": "-nn",
+    "value": "vq_vae",
+    "help": "Global logger prefix.",
+    "type": "str"
+  },
+    "-network_dir": {
+    "short": "-nd",
+    "value": "/home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test",
+    "help": "Directory to event, torch files and trained encoder.",
+    "type": "str"
+  },
+    "-network_vis_dir": {
+    "short": "-nvd",
+    "value": "/home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test",
+    "help": "Directory to visualizations",
+    "type": "str"
+  },
+    "-device": {
+    "short": "-dv",
+    "value": "cuda:3",
+    "help": "Device to work on",
+    "type": "str"
+  },
+  "-learningrate": {
+    "short": "-lr",
+    "value": 5e-5,
+    "help": "The models learningrate",
+    "type": "float"
+  },
+  "-maxepochs": {
+    "short": "-me",
+    "value": 75,
+    "help": "Maximum nr of epochs to train the model",
+    "type": "int"
+  },
+  "-batch_size": {
+    "short": "-bs",
+    "value": 128,
+    "help": "The models batchsize",
+    "type": "int"
+  },
+    "-hidden_channels": {
+    "short": "-hc",
+    "value": 256,
+    "help": "Number of hidden_channels",
+    "type": "int"
+  },
+    "-num_emb": {
+    "short": "-K",
+    "value": 100,
+    "help": "Number of embedded vectors (in case of vq-vae)",
+    "type": "int"
+  },
+  "-emb_dim": {
+    "short": "-D",
+    "value": 512,
+    "help": "Size of each embedded vector (in case of vq-vae)",
+    "type": "int"
+  },
+  "-num_emb_top": {
+    "short": "-K_top",
+    "value": 256,
+    "help": "Number of embedded vectors ",
+    "type": "int"
+  },
+  "-num_emb_bottom": {
+    "short": "-K_bottom",
+    "value": 300,
+    "help": "Number of embedded vectors",
+    "type": "int"
+  },
+  "-emb_dim_top": {
+    "short": "-D_top",
+    "value": 50,
+    "help": "Size of each embedded vector",
+    "type": "int"
+  },
+  "-emb_dim_bottom": {
+    "short": "-D_bottom",
+    "value": 100,
+    "help": "Size of each embedded vector",
+    "type": "int"
+  },
+    "-exponential_moving_averages": {
+    "short": "-ema",
+    "value": 1,
+    "help": "Using exponential moving averages",
+    "type": "int"
+  },
+    "-maxdegree": {
+    "short": "-md",
+    "value": 20,
+    "help": "Max. rotation degree.",
+    "type": "int"
+  },
+  "-reportinterval": {
+    "short": "-rp",
+    "value": 10,
+    "help": "Report after {reprotinterval}-steps",
+    "type": "int"
+  },
+      "-logging_name": {
+    "short": "-ln",
+    "value": "test",
+    "help": "Global logger prefix.",
+    "type": "str"
+  },
+    "-out_directory": {
+    "short": "-od",
+    "value": ".",
+    "help": "Output directory. for logger",
+    "type": "str"
+  }
+}
+
