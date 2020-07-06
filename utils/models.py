@@ -6,7 +6,7 @@ from tqdm import tqdm
 from torchvision.utils import make_grid, save_image
 from enum import IntEnum
 
-from utils.functions import vector_quantization
+# from utils.functions import vector_quantization
 
 
 class Mode (IntEnum):
@@ -92,7 +92,7 @@ class QuarterDecoder(nn.Module):
             nn.ReLU(),
             nn.BatchNorm2d(hidden_channels),
             nn.Conv2d(hidden_channels, 3, kernel_size=1),
-            # nn.Sigmoid()
+            nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -119,7 +119,7 @@ class HalfDecoder(nn.Module):
         return self.cnn(self.residual2(self.residual(x)))
 
 
-class Quantizer(nn.Module):
+class Vector_Quantization(nn.Module):
     def __init__(self,
                  emb_dim,
                  num_emb,
@@ -128,6 +128,7 @@ class Quantizer(nn.Module):
                  gamma=0.99,
                  epsilon=1e-5):
         super().__init__()
+
         if emb_dim is None:
             emb_dim = {"top": 100, "bottom": 100}
         if num_emb is None:
@@ -135,7 +136,9 @@ class Quantizer(nn.Module):
 
         self.emb_dim = emb_dim
         self.num_emb = num_emb
-        self.embedding = torch.randn((self.num_emb, self.emb_dim))
+        self.embedding = nn.Parameter(torch.Tensor(self.num_emb, self.emb_dim))
+        self.embedding.data.normal_()
+        self.embedding.data.uniform_(-self.num_emb, self.num_emb)
 
         self.register_buffer("embed", self.embedding)
         self.register_buffer("cluster_size", torch.zeros(self.num_emb))
@@ -153,7 +156,27 @@ class Quantizer(nn.Module):
         z_e = z_e.permute(0, 2, 3, 1).contiguous()
         z_e_flatten = z_e.view(-1, self.emb_dim)
 
-        z_q, indices, z_one_hot = vector_quantization(z_e_flatten, self.embedding, z_e.shape)
+        # Compute the distances to the embedded vectors
+        # Calculation of distances from z_e_flatten to embeddings e_j using the Euclidean Distance:
+        # (z_e_flatten - emb)^2 = z_e_flatten^2 + emb^2 - 2 emb * z_e_flatten
+        emb_sqr = torch.sum(self.embedding.pow(2), dim=1)
+        z_e_sqr = torch.sum(z_e_flatten.pow(2), dim=1, keepdim=True)
+
+        distances = torch.addmm(torch.add(emb_sqr, z_e_sqr), z_e_flatten, self.embedding.t(), alpha=-2.0, beta=1.0)
+
+        # Store indices as integer values
+        indices = torch.argmin(distances, dim=1)
+
+        z_q_flatten = torch.index_select(self.embedding, dim=0, index=indices)
+        z_q = z_q_flatten.view(z_e.shape)
+
+        # Indices as one-hot vectors
+        z_one_hot = F.one_hot(indices, num_classes=self.num_emb).float()
+        """
+        To obtain z_q, z_one_hot can be alternatively multiplied by the embedded weights. 
+        z_q = torch.matmul(z_one_hot, emb)
+        """
+
         z_q = z_e + (z_q - z_e).detach()
 
         if self.ema:
@@ -176,6 +199,74 @@ class Quantizer(nn.Module):
 
         embed_normalized = self.embed_avg / cluster_size.unsqueeze(1)
         self.embedding.data.copy_(embed_normalized)
+
+
+class VQ_VAE(nn.Module):
+
+    def __init__(self, hidden_channels, num_emb, emb_dim, device="cpu",
+                 training=False, ema=False, commitment_cost=0.25, gamma=0.99, epsilon=1e-5):
+        super().__init__()
+
+        self.enc = QuarterEncoder(hidden_channels=hidden_channels)
+        self.dec = QuarterDecoder(hidden_channels=hidden_channels)
+        self.vector_quantization = Vector_Quantization(emb_dim,
+                                                       num_emb,
+                                                       training=training,
+                                                       ema=ema,
+                                                       gamma=gamma,
+                                                       epsilon=epsilon
+                                                       )
+
+
+        self.conv_to_emb_dim = nn.Conv2d(hidden_channels, emb_dim, kernel_size=1)
+        self.conv_from_emb_dim = nn.Conv2d(emb_dim, hidden_channels, kernel_size=1)
+
+        self.device=device
+        self.training = training
+        if self.training:
+            self.total_loss = None
+            self.reconstruction_loss = None
+            self.ema = ema
+            self.commmitment_loss = None
+            self.commitment_cost = commitment_cost
+            if not self.ema:
+                self.codebook_loss = None
+
+    def encode(self, x):
+        """
+        Function only used to generate latent space for visualization.
+        :param x: Input Image
+        :return z: Latent Space
+        """
+        z_e = self.enc(x)
+        z_e = self.conv_to_emb_dim(z_e)
+
+        _, _, indices, _ = self.vector_quantization(z_e)
+        return indices
+
+    def forward(self, x):
+        z_e = self.enc(x)
+        z_e = self.conv_to_emb_dim(z_e)
+
+        z_e, z_q, indices, z_one_hot = self.vector_quantization(z_e)
+        z_q_conv = self.conv_from_emb_dim(z_q.permute(0, 3, 1, 2).contiguous().float())
+
+        reconstruction = self.dec(z_q_conv)
+
+        if self.training:
+            # Calculate Losses
+            self.reconstruction_loss = F.binary_cross_entropy(reconstruction, x)
+            self.commmitment_loss = self.commitment_cost * F.mse_loss(z_q.detach(), z_e)
+            if self.ema:
+                # Use EMA to update the embedding vectors:
+                self.total_loss = self.reconstruction_loss + self.commmitment_loss
+            else:
+                # Otherwise:
+                self.codebook_loss = F.mse_loss(z_q, z_e.detach())
+                self.total_loss = self.reconstruction_loss + self.codebook_loss + \
+                                  self.commitment_cost * self.commmitment_loss
+
+        return reconstruction
 
 
 class VQ_VAE_2(nn.Module):
@@ -208,18 +299,18 @@ class VQ_VAE_2(nn.Module):
         self.num_emb = num_emb
         self.emb_dim = emb_dim
 
-        self.emb_top = Quantizer(emb_dim["top"], num_emb["top"],
-                                 training=training,
-                                 ema=ema,
-                                 gamma=gamma,
-                                 epsilon=epsilon
-        )
-        self.emb_bottom = Quantizer(emb_dim["bottom"], num_emb["bottom"],
-                                 training=training,
-                                 ema=ema,
-                                 gamma=gamma,
-                                 epsilon=epsilon
-        )
+        self.emb_top = Vector_Quantization(emb_dim["top"], num_emb["top"],
+                                           training=training,
+                                           ema=ema,
+                                           gamma=gamma,
+                                           epsilon=epsilon,
+                                           )
+        self.emb_bottom = Vector_Quantization(emb_dim["bottom"], num_emb["bottom"],
+                                              training=training,
+                                              ema=ema,
+                                              gamma=gamma,
+                                              epsilon=epsilon,
+                                              )
 
 
         if self.training:
@@ -275,7 +366,7 @@ class VQ_VAE_2(nn.Module):
 
         if self.training:
             # Calculate Losses
-            self.reconstruction_loss = F.binary_cross_entropy_with_logits(x, reconstruction)
+            self.reconstruction_loss = F.mse_loss(x, reconstruction)
             commmitment_loss_top = F.mse_loss(z_q_top.detach(), z_e_top)
             commmitment_loss_bottom = F.mse_loss(z_q_bottom.detach(), z_e_bottom)
             self.commmitment_loss = self.commitment_cost * (commmitment_loss_bottom + commmitment_loss_top)
@@ -289,71 +380,6 @@ class VQ_VAE_2(nn.Module):
 
                 self.total_loss = self.reconstruction_loss + self.codebook_loss +  \
                                   self.commitment_cost * self.commmitment_loss
-        return reconstruction
-
-
-class VQ_VAE(nn.Module):
-
-    def __init__(self, hidden_channels, num_emb, emb_dim,
-                 training=False, ema=False, commitment_cost=0.25, gamma=0.99, epsilon=1e-5):
-        super().__init__()
-
-        self.enc = QuarterEncoder(hidden_channels=hidden_channels)
-        self.dec = QuarterDecoder(hidden_channels=hidden_channels)
-        self.emb = Quantizer(emb_dim, num_emb,
-                                    training=training,
-                                    ema=ema,
-                                    gamma=gamma,
-                                    epsilon=epsilon
-        )
-
-        self.conv_to_emb_dim = nn.Conv2d(hidden_channels, emb_dim, kernel_size=1)
-        self.conv_from_emb_dim = nn.Conv2d(emb_dim, hidden_channels, kernel_size=1)
-
-        self.training = training
-        if self.training:
-            self.total_loss = None
-            self.reconstruction_loss = None
-            self.ema = ema
-            self.commmitment_loss = None
-            self.commitment_cost = commitment_cost
-            if not self.ema:
-                self.codebook_loss = None
-
-    def encode(self, x):
-        """
-        Function only used to generate latent space for visualization.
-        :param x: Input Image
-        :return z: Latent Space
-        """
-        z_e = self.enc(x)
-        z_e = self.conv_to_emb_dim(z_e)
-
-        _, _, indices, _ = self.emb(z_e)
-        return indices
-
-    def forward(self, x):
-        z_e = self.enc(x)
-        z_e = self.conv_to_emb_dim(z_e)
-
-        z_e, z_q, indices, z_one_hot = self.emb(z_e)
-        z_q_conv = self.conv_from_emb_dim(z_q.permute(0, 3, 1, 2).contiguous().float())
-
-        reconstruction = self.dec(z_q_conv)
-
-        if self.training:
-            # Calculate Losses
-            self.reconstruction_loss = F.mse_loss(x, reconstruction)
-            self.commmitment_loss = self.commitment_cost * F.mse_loss(z_q.detach(), z_e)
-            if self.ema:
-                # Use EMA to update the embedding vectors:
-                self.total_loss = self.reconstruction_loss + self.commmitment_loss
-            else:
-                # Otherwise:
-                self.codebook_loss = F.mse_loss(z_q, z_e.detach())
-                self.total_loss = self.reconstruction_loss + self.codebook_loss + \
-                                  self.commitment_cost * self.commmitment_loss
-        print(self.emb.embedding)
         return reconstruction
 
 
@@ -409,6 +435,7 @@ class VQ_VAE_Training:
             self.vq_vae = VQ_VAE(hidden_channels=hidden_channels,
                                  num_emb=num_emb,
                                  emb_dim=emb_dim,
+                                 device=device,
                                  training=training,
                                  ema=ema,
                                  commitment_cost=commitment_cost,
@@ -426,6 +453,12 @@ class VQ_VAE_Training:
                                    epsilon=epsilon)
 
         self.vq_vae.to(self.device)
+        for name, param in self.vq_vae.named_parameters():
+            if param.device.type != "cuda":
+                print('param {}, not on GPU'.format(name))
+            else:
+                print('param {}, on GPU'.format(name))
+
         self.optimizer = optimizer(self.vq_vae.parameters(),  **optimizer_kwargs  )
 
     def step(self, data):
@@ -438,10 +471,6 @@ class VQ_VAE_Training:
 
         reconstruction = self.vq_vae(data)
 
-        if data.size(0) > 3:
-            grid = make_grid(torch.cat((data[0:4], reconstruction[0:4].sigmoid()), dim=0), nrow=4)
-            save_image(grid,  "test.png")
-
         if self.verbose:
             self.writer.add_scalar("reconstruction loss", self.vq_vae.reconstruction_loss, self.step_id)
             if not self.vq_vae.ema:
@@ -449,9 +478,13 @@ class VQ_VAE_Training:
             self.writer.add_scalar("commitment loss", self.vq_vae.commmitment_loss, self.step_id)
         self.writer.add_scalar("total loss", self.vq_vae.total_loss, self.step_id)
 
-        if self.step_id % 20 == 0:
-            self.writer.add_images("target", data[0:2], self.step_id)
-            self.writer.add_images("reconstruction", reconstruction[0:2].sigmoid(), self.step_id)
+        if self.step_id % 100 == 0 and data.size(0) > 50:
+            self.writer.add_images("target", data[0:16], self.step_id)
+            self.writer.add_images("reconstruction", reconstruction[0:10], self.step_id)
+
+            if self.epoch_id > 4:
+                grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=5)
+                save_image(grid, f"{self.network_dir}/results-{self.epoch_id}-{self.step_id}.png", normalize=True)
 
             # self.writer.add_embedding(self.vq_vae.embedding.weight.data,  global_step=self.step_id)
 
@@ -493,7 +526,6 @@ class VQ_VAE_Training:
                     except StopIteration:
                         valid_iter = iter(self.valid_data)
                         vdata, = next(valid_iter)
-                    vdata = vdata.to(self.device)
                     self.valid_step(vdata)
                 self.step_id += 1
 

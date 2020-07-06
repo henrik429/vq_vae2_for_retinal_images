@@ -1,4 +1,4 @@
-#from umap import UMAP
+from umap import UMAP
 from sklearn.manifold._t_sne import TSNE
 import matplotlib.pyplot as plt
 from pandas import read_csv
@@ -41,6 +41,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae, writer,
     angles.extend([x for x in range(-9, 10)])
 
     print("Generate targets...")
+    jpg_list.remove(".snakemake_timestamp")
     for i, jpg in tqdm(enumerate(jpg_list)):
         jpg = jpg.replace("_flipped", "")
         jpg = jpg.replace(".jpeg", "")
@@ -97,34 +98,27 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae, writer,
     plt.pause(5)
     plt.close()
 
-    try:
-        #import umap
-        # U-Map Visualization
-        clusterable_embedding = umap.UMAP(
-            n_neighbors=30,
-            min_dist=0.0,
-            n_components=2,
-            random_state=42,
-        ).fit_transform(encodings)
+    # U-Map Visualization
+    clusterable_embedding = UMAP(
+        n_neighbors=30,
+        min_dist=0.0,
+        #n_components=2,
+        random_state=42,
+    ).fit_transform(encodings)
 
-        plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
-                    c=colormap[targets],
-                    s=1
-                    )
-        plt.legend(handles=patches)
-
-        plt.title(f"UMAP-Visualization\n", fontsize=16, fontweight='bold')
-        plt.savefig(f"{network_dir}/visualizations/umap_visualization.png")
-        plt.show()
-        plt.close()
-    except:
-        pass
-
-    del test_data
-    del targets
-    del encodings
+    plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
+                c=colormap[targets],
+                s=1
+                )
+    plt.legend(handles=patches)
+    plt.title(f"UMAP-Visualization\n", fontsize=16, fontweight='bold')
+    plt.savefig(f"{network_dir}/visualizations/umap_visualization.png")
+    plt.show()
+    plt.close()
 
     data = [[] for _ in range(levels)]
+
+    print("Generate data for histograms...")
     for i, jpg in tqdm(enumerate(jpg_list)):
         saved_jpg = jpg
         jpg = jpg.replace("_flipped", "")
@@ -149,8 +143,8 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae, writer,
             for i, d in enumerate(level_data):
                 d = d.permute(0, 3, 1, 2).float().to(device)
                 indices_top, indices_bottom = vq_vae.encode(d)
-                indices_bottom = indices_bottom.detach().numpy().astype(np.uint8)
-                indices_top = indices_top.detach().numpy().astype(np.uint8)
+                indices_bottom = indices_bottom.to("cpu").detach().numpy().astype(np.uint8)
+                indices_top = indices_top.to("cpu").detach().numpy().astype(np.uint8)
 
                 for index in indices_top.ravel():
                     bins_top[index] += 1
@@ -186,7 +180,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae, writer,
             for i, d in enumerate(level_data):
                 d = d.permute(0, 3, 1, 2).float().to(device)
                 indices = vq_vae.encode(d)
-                indices = indices.detach().numpy().astype(np.uint8)
+                indices = indices.to("cpu").detach().numpy().astype(np.uint8)
 
                 for index in indices.ravel():
                     bins[index] += 1
