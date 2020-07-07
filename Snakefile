@@ -13,12 +13,15 @@ resize1 = config['RESIZE'][0]
 resize2 = config['RESIZE'][1]
 flip = config['FLIP']
 
+
+import os
+
 rule all:
     input:
-        expand("{port}/training.done", port = config['PORT'])
+        expand("{port}/main.done", port = config['PORT'])
     run:
         path = os.path.abspath(str(path_prefix) + "/models/" + str(networkname))
-        os.system("rm {port}/training.done")
+        os.system(f"rm {port}/training.done")
         shell("tensorboard --logdir %s --port {port}" % path)
 
 
@@ -44,7 +47,7 @@ rule main:
              flip = config['FLIP']),
         csv="/data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv"
     output:
-        touch(expand("{port}/training.done", port = config['PORT']))
+        touch(expand("{port}/main.done", port = config['PORT']))
     run:
         shell("python train_model.py -i {input.train_data} -v {input.valid_data} -test {input.test_data} -csv {input.csv} -pp {path_prefix} -nn {networkname} -md {maxdegree}" )
 

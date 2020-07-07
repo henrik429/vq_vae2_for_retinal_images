@@ -1,0 +1,1443 @@
+2020-07-03 14:32-test-I: Running ./utils/models.py in process 65517.
+2020-07-03 14:32-test-I: Writing to .
+2020-07-03 14:32-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae2, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-03 14:32-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 75,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae2,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-03 15:20-test-I: Running ./utils/models.py in process 5888.
+2020-07-03 15:20-test-I: Writing to .
+2020-07-03 15:20-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-03 15:20-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 75,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-03 15:22-test-I: Running ./utils/models.py in process 7072.
+2020-07-03 15:22-test-I: Writing to .
+2020-07-03 15:22-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-03 15:22-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 128,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 75,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 512,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 10:54-test-I: Running ./utils/models.py in process 33718.
+2020-07-06 10:54-test-I: Writing to .
+2020-07-06 10:54-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 10:54-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 11:09-test-I: Running ./utils/models.py in process 43510.
+2020-07-06 11:09-test-I: Writing to .
+2020-07-06 11:09-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 11:09-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 11:24-test-I: Running ./utils/models.py in process 60281.
+2020-07-06 11:24-test-I: Writing to .
+2020-07-06 11:24-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 11:24-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 11:29-test-I: Running ./utils/models.py in process 62945.
+2020-07-06 11:29-test-I: Writing to .
+2020-07-06 11:29-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 11:29-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 11:31-test-I: Running ./utils/models.py in process 64409.
+2020-07-06 11:31-test-I: Writing to .
+2020-07-06 11:31-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 11:31-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 11:32-test-I: Running ./utils/models.py in process 66794.
+2020-07-06 11:32-test-I: Writing to .
+2020-07-06 11:32-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 11:32-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 11:36-test-I: Running ./utils/models.py in process 68534.
+2020-07-06 11:36-test-I: Writing to .
+2020-07-06 11:36-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 11:36-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 11:45-test-I: Running ./utils/models.py in process 72990.
+2020-07-06 11:45-test-I: Writing to .
+2020-07-06 11:45-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 11:45-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 11:46-test-I: Running ./utils/models.py in process 73657.
+2020-07-06 11:46-test-I: Writing to .
+2020-07-06 11:46-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 11:46-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 11:52-test-I: Running ./utils/models.py in process 76662.
+2020-07-06 11:52-test-I: Writing to .
+2020-07-06 11:52-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 11:52-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 12:15-test-I: Running ./utils/models.py in process 7870.
+2020-07-06 12:15-test-I: Writing to .
+2020-07-06 12:15-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 12:15-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 12:21-test-I: Running ./utils/models.py in process 10866.
+2020-07-06 12:21-test-I: Writing to .
+2020-07-06 12:21-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 12:21-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 12:31-test-I: Running ./utils/models.py in process 15763.
+2020-07-06 12:31-test-I: Writing to .
+2020-07-06 12:31-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 12:31-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 12:34-test-I: Running ./utils/models.py in process 17258.
+2020-07-06 12:34-test-I: Writing to .
+2020-07-06 12:34-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 12:34-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 12:38-test-I: Running ./utils/models.py in process 20018.
+2020-07-06 12:38-test-I: Writing to .
+2020-07-06 12:38-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 12:38-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 12:42-test-I: Running ./utils/models.py in process 21989.
+2020-07-06 12:42-test-I: Writing to .
+2020-07-06 12:42-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 12:42-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 13:05-test-I: Running ./utils/models.py in process 33206.
+2020-07-06 13:05-test-I: Writing to .
+2020-07-06 13:05-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 13:05-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 13:08-test-I: Running ./utils/models.py in process 34323.
+2020-07-06 13:08-test-I: Writing to .
+2020-07-06 13:08-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 13:08-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 13:08-test-I: Running ./utils/models.py in process 34783.
+2020-07-06 13:08-test-I: Writing to .
+2020-07-06 13:08-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 13:08-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 13:10-test-I: Running ./utils/models.py in process 35637.
+2020-07-06 13:10-test-I: Writing to .
+2020-07-06 13:10-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 13:10-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 13:13-test-I: Running ./utils/models.py in process 37076.
+2020-07-06 13:13-test-I: Writing to .
+2020-07-06 13:13-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 13:13-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 13:17-test-I: Running ./utils/models.py in process 39237.
+2020-07-06 13:17-test-I: Writing to .
+2020-07-06 13:17-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 13:17-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 14:15-test-I: Running ./utils/models.py in process 72886.
+2020-07-06 14:15-test-I: Writing to .
+2020-07-06 14:15-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 14:15-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 15:32-test-I: Running ./utils/models.py in process 35762.
+2020-07-06 15:32-test-I: Writing to .
+2020-07-06 15:32-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 15:32-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 10,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 15:35-test-I: Running ./utils/models.py in process 37129.
+2020-07-06 15:35-test-I: Writing to .
+2020-07-06 15:35-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 15:35-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 0,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 15:40-test-I: Running ./utils/models.py in process 39741.
+2020-07-06 15:40-test-I: Writing to .
+2020-07-06 15:40-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 15:40-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 0,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 15:52-test-I: Running ./utils/models.py in process 45773.
+2020-07-06 15:52-test-I: Writing to .
+2020-07-06 15:52-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 15:52-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 0,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 16:10-test-I: Running ./utils/models.py in process 54683.
+2020-07-06 16:10-test-I: Writing to .
+2020-07-06 16:10-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae_second_try, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 16:10-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 0,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae_second_try,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 16:57-test-I: Running ./utils/models.py in process 77441.
+2020-07-06 16:57-test-I: Writing to .
+2020-07-06 16:57-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 16:57-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 40,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+
+
+==================================================
+
+
+
+
+2020-07-06 17:01-test-I: Running ./utils/models.py in process 79221.
+2020-07-06 17:01-test-I: Writing to .
+2020-07-06 17:01-test-I: Called with the following arguments: 
+train_model.py, -i, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -v, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -test, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, -csv, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv, -pp, ., -nn, vq_vae, -md, 14
+from
+/data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images
+
+2020-07-06 17:01-test-I: Initialized with FLAGS:
+batch_size                  = 128,
+checkpointinterval          = 500,
+csv                         = /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv,
+device                      = cuda:3,
+emb_dim                     = 512,
+emb_dim_bottom              = 100,
+emb_dim_top                 = 50,
+exponential_moving_averages = 1,
+hidden_channels             = 256,
+input                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+learningrate                = 5e-05,
+logging_name                = test,
+maxdegree                   = 14,
+maxepochs                   = 40,
+mode                        = 1,
+network_dir                 = /home/henrik/PycharmProjects/vae_for_retinal_images/odir-vae-test-test,
+network_name                = vq_vae,
+network_vis_dir             = /home/henrik/PycharmProjects/vae_for_retinal_images/data/processed/visualizations_odir-vae-test-test,
+num_emb                     = 100,
+num_emb_bottom              = 300,
+num_emb_top                 = 256,
+out_directory               = .,
+path_prefix                 = .,
+reportinterval              = 10,
+size_latent_space           = 32,
+size_latent_space_bottom    = 64,
+size_latent_space_top       = 32,
+test                        = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+valid                       = /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/,
+

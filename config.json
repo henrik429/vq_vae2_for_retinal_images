@@ -85,7 +85,7 @@
   },
   "-maxepochs": {
     "short": "-me",
-    "value": 75,
+    "value": 20,
     "help": "Maximum nr of epochs to train the model",
     "type": "int"
   },
@@ -103,13 +103,13 @@
   },
     "-num_emb": {
     "short": "-K",
-    "value": 100,
+    "value": 512,
     "help": "Number of embedded vectors (in case of vq-vae)",
     "type": "int"
   },
   "-emb_dim": {
     "short": "-D",
-    "value": 512,
+    "value": 100,
     "help": "Size of each embedded vector (in case of vq-vae)",
     "type": "int"
   },
@@ -153,6 +153,12 @@
     "short": "-rp",
     "value": 10,
     "help": "Report after {reprotinterval}-steps",
+    "type": "int"
+  },
+  "-checkpointinterval": {
+    "short": "-ci",
+    "value": 500,
+    "help": "Report after {checkpointinterval}-steps",
     "type": "int"
   },
       "-logging_name": {

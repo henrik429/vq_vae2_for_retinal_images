@@ -1,0 +1,19 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 30
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	main
+	2
+
+[Mon Jul  6 11:45:06 2020]
+rule main:
+    input: /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, /data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_0_maxdegree_14_resize_128_128_flip_0/kaggle/, /data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv
+    output: 1244/training.done
+    jobid: 1
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /data/analysis/ag-reils/ag-reils-shared-students/henrik/vq_vae2_for_retinal_images/.snakemake/log/2020-07-06T114506.742596.snakemake.log
