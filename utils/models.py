@@ -479,9 +479,9 @@ class VQ_VAE_Training:
             self.writer.add_images("target", data[0:16], self.step_id)
             self.writer.add_images("reconstruction", reconstruction[0:10], self.step_id)
 
-            if self.epoch_id > 4:
-                grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=5)
-                save_image(grid, f"{self.network_dir}/results-{self.epoch_id}-{self.step_id}.png", normalize=True)
+        if self.step_id % 200 == 0 and self.epoch_id > 4:
+            grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=5)
+            save_image(grid, f"{self.network_dir}/results/result-{self.epoch_id}-{self.step_id}.png", normalize=True)
 
         self.vq_vae.total_loss.backward()
         self.optimizer.step()
