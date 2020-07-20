@@ -202,12 +202,7 @@ class Vector_Quantization(nn.Module):
 
 
 class VQ_VAE(nn.Module):
-
-<<<<<<< HEAD
-    def __init__(self, hidden_channels, num_emb, emb_dim, device="cpu",
-=======
     def __init__(self, hidden_channels, num_emb, emb_dim,
->>>>>>> 8bbb566127617c4d81359387eff51e4db7cd7323
                  training=False, ema=False, commitment_cost=0.25, gamma=0.99, epsilon=1e-5):
         super().__init__()
 
@@ -225,10 +220,6 @@ class VQ_VAE(nn.Module):
         self.conv_to_emb_dim = nn.Conv2d(hidden_channels, emb_dim, kernel_size=1)
         self.conv_from_emb_dim = nn.Conv2d(emb_dim, hidden_channels, kernel_size=1)
 
-<<<<<<< HEAD
-        self.device=device
-=======
->>>>>>> 8bbb566127617c4d81359387eff51e4db7cd7323
         self.training = training
         if self.training:
             self.total_loss = None
@@ -318,10 +309,6 @@ class VQ_VAE_2(nn.Module):
                                               gamma=gamma,
                                               epsilon=epsilon,
                                               )
-<<<<<<< HEAD
-
-=======
->>>>>>> 8bbb566127617c4d81359387eff51e4db7cd7323
 
         if self.training:
             self.total_loss = None
@@ -488,7 +475,6 @@ class VQ_VAE_Training:
             self.writer.add_scalar("commitment loss", self.vq_vae.commmitment_loss, self.step_id)
         self.writer.add_scalar("total loss", self.vq_vae.total_loss, self.step_id)
 
-<<<<<<< HEAD
         if self.step_id % 100 == 0 and data.size(0) > 50:
             self.writer.add_images("target", data[0:16], self.step_id)
             self.writer.add_images("reconstruction", reconstruction[0:10], self.step_id)
@@ -496,11 +482,10 @@ class VQ_VAE_Training:
             if self.epoch_id > 4:
                 grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=5)
                 save_image(grid, f"{self.network_dir}/results-{self.epoch_id}-{self.step_id}.png", normalize=True)
-=======
+
         if self.step_id % 80 == 0 and data.size(0) > 50:
             self.writer.add_images("target", data[0:16], self.step_id)
             self.writer.add_images("reconstruction", reconstruction[0:10], self.step_id)
->>>>>>> 8bbb566127617c4d81359387eff51e4db7cd7323
 
             if self.epoch_id > 4:
                 grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=5)

@@ -18,28 +18,17 @@ import os
 
 rule all:
     input:
-        expand("{port}/main.done", port = config['PORT'])
+        expand("{port}/vis.done", port = config['PORT'])
     run:
         path = os.path.abspath(str(path_prefix) + "/models/" + str(networkname))
         os.system(f"rm {port}/training.done")
         shell("tensorboard --logdir %s --port {port}" % path)
 
 
-rule main:
+rule visualization:
     input:
-        train_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
-                 n_augmentation = config['N_AUGMENTATION'],
-                 maxdegree = config['MAX_ROTATION_ANGLE'],
-                 resize1 = config['RESIZE'][0],
-                 resize2 = config['RESIZE'][1],
-                 flip = config['FLIP']),
+        expand("{port}/training.done", port = config['PORT']),
         test_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
-             n_augmentation = config['N_AUGMENTATION'],
-             maxdegree = config['MAX_ROTATION_ANGLE'],
-             resize1 = config['RESIZE'][0],
-             resize2 = config['RESIZE'][1],
-             flip = config['FLIP']),
-        valid_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
              n_augmentation = config['N_AUGMENTATION'],
              maxdegree = config['MAX_ROTATION_ANGLE'],
              resize1 = config['RESIZE'][0],
@@ -47,9 +36,28 @@ rule main:
              flip = config['FLIP']),
         csv="/data/analysis/ag-reils/ag-reils-shared-students/retina/data/raw/kaggle/train/trainLabels.csv"
     output:
-        touch(expand("{port}/main.done", port = config['PORT']))
+        touch(expand("{port}/vis.done", port = config['PORT']))
     run:
-        shell("python train_model.py -i {input.train_data} -v {input.valid_data} -test {input.test_data} -csv {input.csv} -pp {path_prefix} -nn {networkname} -md {maxdegree}" )
+        shell("python test_model.py -t {input.test_data} -csv {input.csv} -pp {path_prefix} -nn {networkname} -md {maxdegree}")
+
+rule training:
+    input:
+        train_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
+                 n_augmentation = config['N_AUGMENTATION'],
+                 maxdegree = config['MAX_ROTATION_ANGLE'],
+                 resize1 = config['RESIZE'][0],
+                 resize2 = config['RESIZE'][1],
+                 flip = config['FLIP']),
+        valid_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
+             n_augmentation = config['N_AUGMENTATION'],
+             maxdegree = config['MAX_ROTATION_ANGLE'],
+             resize1 = config['RESIZE'][0],
+             resize2 = config['RESIZE'][1],
+             flip = config['FLIP'])
+    output:
+        touch(expand("{port}/training.done", port = config['PORT']))
+    run:
+        shell("python train_model.py -i {input.train_data} -v {input.valid_data} -pp {path_prefix} -nn {networkname}" )
 
 
 rule preprocess_training_images:

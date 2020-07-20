@@ -5,6 +5,7 @@ from tensorboardX import SummaryWriter
 from tqdm import tqdm
 from torchvision.utils import make_grid, save_image
 from enum import IntEnum
+import os
 
 # from utils.functions import vector_quantization
 
@@ -13,6 +14,7 @@ class Mode (IntEnum):
     vq_vae = 1
     vq_vae_2 = 2
     # vq_vae3 = 3
+    vae = 4
 
 
 class Residual_Block(nn.Module):
@@ -158,7 +160,7 @@ class Vector_Quantization(nn.Module):
 
         # Compute the distances to the embedded vectors
         # Calculation of distances from z_e_flatten to embeddings e_j using the Euclidean Distance:
-        # (z_e_flatten - emb)^2 = z_e_flatten^2 + emb^2 - 2 emb * z_e_flatten
+        # (z_e_flatten - emb)^2 = z_e_flatten^2 + emb^2 - 2 * emb * z_e_flatten
         emb_sqr = torch.sum(self.embedding.pow(2), dim=1)
         z_e_sqr = torch.sum(z_e_flatten.pow(2), dim=1, keepdim=True)
 
@@ -169,13 +171,11 @@ class Vector_Quantization(nn.Module):
 
         z_q_flatten = torch.index_select(self.embedding, dim=0, index=indices)
         z_q = z_q_flatten.view(z_e.shape)
+        # Alternatively, to obtain z_q, z_one_hot can be  multiplied by the embedded weights.
+        # z_q = torch.matmul(z_one_hot, emb)
 
         # Indices as one-hot vectors
         z_one_hot = F.one_hot(indices, num_classes=self.num_emb).float()
-        """
-        To obtain z_q, z_one_hot can be alternatively multiplied by the embedded weights. 
-        z_q = torch.matmul(z_one_hot, emb)
-        """
 
         z_q = z_e + (z_q - z_e).detach()
 
@@ -207,8 +207,11 @@ class VQ_VAE(nn.Module):
                  training=False, ema=False, commitment_cost=0.25, gamma=0.99, epsilon=1e-5):
         super().__init__()
 
-        self.enc = QuarterEncoder(hidden_channels=hidden_channels)
-        self.dec = QuarterDecoder(hidden_channels=hidden_channels)
+        self.enc1 = QuarterEncoder(hidden_channels=hidden_channels)
+        self.enc2 = HalfEncoder(hidden_channels=hidden_channels)
+        self.dec1 = QuarterDecoder(hidden_channels=hidden_channels)
+        self.dec2 = HalfDecoder(hidden_channels=hidden_channels)
+
         self.vector_quantization = Vector_Quantization(emb_dim,
                                                        num_emb,
                                                        training=training,
@@ -237,24 +240,28 @@ class VQ_VAE(nn.Module):
         :param x: Input Image
         :return z: Latent Space
         """
-        z_e = self.enc(x)
+        z_e = self.enc1(x)
+        z_e = self.enc2(z_e)
+
         z_e = self.conv_to_emb_dim(z_e)
 
         _, _, indices, _ = self.vector_quantization(z_e)
         return indices
 
     def forward(self, x):
-        z_e = self.enc(x)
+        z_e = self.enc1(x)
+        z_e = self.enc2(z_e)
         z_e = self.conv_to_emb_dim(z_e)
 
         z_e, z_q, indices, z_one_hot = self.vector_quantization(z_e)
         z_q_conv = self.conv_from_emb_dim(z_q.permute(0, 3, 1, 2).contiguous().float())
 
-        reconstruction = self.dec(z_q_conv)
+        z_q_conv= self.dec2(z_q_conv)
+        reconstruction = self.dec1(z_q_conv)
 
         if self.training:
             # Calculate Losses
-            self.reconstruction_loss = F.binary_cross_entropy(reconstruction, x)
+            self.reconstruction_loss = F.mse_loss(reconstruction, x)
             self.commmitment_loss = self.commitment_cost * F.mse_loss(z_q.detach(), z_e)
             if self.ema:
                 # Use EMA to update the embedding vectors:
@@ -298,18 +305,18 @@ class VQ_VAE_2(nn.Module):
         self.num_emb = num_emb
         self.emb_dim = emb_dim
 
-        self.emb_top = Vector_Quantization(emb_dim["top"], num_emb["top"],
-                                           training=training,
-                                           ema=ema,
-                                           gamma=gamma,
-                                           epsilon=epsilon,
-                                           )
-        self.emb_bottom = Vector_Quantization(emb_dim["bottom"], num_emb["bottom"],
-                                              training=training,
-                                              ema=ema,
-                                              gamma=gamma,
-                                              epsilon=epsilon,
-                                              )
+        self.vector_quantization_top = Vector_Quantization(emb_dim["top"], num_emb["top"],
+                                                           training=training,
+                                                           ema=ema,
+                                                           gamma=gamma,
+                                                           epsilon=epsilon,
+                                                           )
+        self.vector_quantization_bottom = Vector_Quantization(emb_dim["bottom"], num_emb["bottom"],
+                                                              training=training,
+                                                              ema=ema,
+                                                              gamma=gamma,
+                                                              epsilon=epsilon,
+                                                              )
 
         if self.training:
             self.total_loss = None
@@ -330,7 +337,7 @@ class VQ_VAE_2(nn.Module):
         z_e_top = self.encoders["top"](z_e_bottom)
         z_e_top = self.conv_to_emb_dim_top(z_e_top)
 
-        _, z_q_top, indices_top, _ = self.emb_top(z_e_top)
+        _, z_q_top, indices_top, _ = self.vector_quantization_top(z_e_top)
 
         z_q_top_conv = self.conv_from_emb_dim_top(z_q_top.permute(0, 3, 1, 2).contiguous())
 
@@ -339,7 +346,7 @@ class VQ_VAE_2(nn.Module):
         z_e_bottom = torch.cat((z_e_top_upsampled, z_e_bottom), dim=1)
         z_e_bottom = self.conv_to_emb_dim_bottom(z_e_bottom)
 
-        _, _, indices_bottom, _ = self.emb_bottom(z_e_bottom)
+        _, _, indices_bottom, _ = self.vector_quantization_bottom(z_e_bottom)
 
         return indices_top, indices_bottom
 
@@ -348,7 +355,7 @@ class VQ_VAE_2(nn.Module):
         z_e_top = self.encoders["top"](z_e_bottom)
         z_e_top = self.conv_to_emb_dim_top(z_e_top)
 
-        z_e_top, z_q_top, indices_top, z_top_one_hot = self.emb_top(z_e_top)
+        z_e_top, z_q_top, indices_top, z_top_one_hot = self.vector_quantization_top(z_e_top)
 
         z_q_top_conv = self.conv_from_emb_dim_top(z_q_top.permute(0, 3, 1, 2).contiguous())
 
@@ -357,7 +364,7 @@ class VQ_VAE_2(nn.Module):
         z_e_bottom = torch.cat((z_e_top_upsampled, z_e_bottom), dim=1)
         z_e_bottom = self.conv_to_emb_dim_bottom(z_e_bottom)
 
-        z_e_bottom, z_q_bottom, indices_bottom, z_bottom_one_hot = self.emb_bottom(z_e_bottom)
+        z_e_bottom, z_q_bottom, indices_bottom, z_bottom_one_hot = self.vector_quantization_bottom(z_e_bottom)
 
         z_q_bottom_conv = self.conv_from_emb_dim_bottom(z_q_bottom.permute(0, 3, 1, 2).contiguous())
         reconstruction = self.decoders["bottom"](z_q_bottom_conv)
@@ -405,11 +412,6 @@ class VQ_VAE_Training:
                  gamma=0.99,
                  epsilon=1e-5):
 
-        if emb_dim is None:
-            emb_dim = {"top": 50, "bottom": 100}
-        if num_emb is None:
-            num_emb = {"top": 150, "bottom": 300}
-
         self.training = training
         self.verbose = verbose
         self.network_name = network_name
@@ -417,6 +419,8 @@ class VQ_VAE_Training:
         self.writer = SummaryWriter(f"{self.network_dir}")
         self.report_interval = report_interval
         self.checkpoint_interval = checkpoint_interval
+        os.makedirs(f"{self.network_dir}/results", exist_ok=True)
+        os.makedirs(f"{self.network_dir}/valid_results/", exist_ok=True)
 
         self.train_data = data
         self.valid_data = valid
@@ -429,7 +433,8 @@ class VQ_VAE_Training:
         if optimizer_kwargs is None:
             optimizer_kwargs = {"lr": 5e-4}
 
-        if mode == Mode.vq_vae:
+        self.mode = mode
+        if self.mode == Mode.vq_vae:
             self.vq_vae = VQ_VAE(hidden_channels=hidden_channels,
                                  num_emb=num_emb,
                                  emb_dim=emb_dim,
@@ -457,6 +462,7 @@ class VQ_VAE_Training:
                 print('param {}, on GPU'.format(name))
 
         self.optimizer = optimizer(self.vq_vae.parameters(),  **optimizer_kwargs  )
+        self.num_emb = num_emb
 
     def step(self, data):
         """Performs a single step of VQ-VAE training.
@@ -476,11 +482,11 @@ class VQ_VAE_Training:
         self.writer.add_scalar("total loss", self.vq_vae.total_loss, self.step_id)
 
         if self.step_id % 80 == 0 and data.size(0) > 50:
-            self.writer.add_images("target", data[0:16], self.step_id)
-            self.writer.add_images("reconstruction", reconstruction[0:10], self.step_id)
+            self.writer.add_images("target", data[0:8], self.step_id)
+            self.writer.add_images("reconstruction", reconstruction[0:8], self.step_id)
 
-        if self.step_id % 200 == 0 and self.epoch_id > 4:
-            grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=5)
+        if self.epoch_id > 8 and self.step_id % 200 == 0:
+            grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=10)
             save_image(grid, f"{self.network_dir}/results/result-{self.epoch_id}-{self.step_id}.png", normalize=True)
 
         self.vq_vae.total_loss.backward()
@@ -493,8 +499,17 @@ class VQ_VAE_Training:
         with torch.no_grad():
             if self.training:
                 data = data.to(self.device)
-                _ = self.vq_vae(data)
+                reconstruction = self.vq_vae(data)
                 self.writer.add_scalar("valid loss", self.vq_vae.total_loss, self.step_id)
+
+                if self.step_id % 200 == 0 and data.size(0) > 50:
+                    self.writer.add_images("valid_target", data[0:16], self.step_id)
+                    self.writer.add_images("valid_reconstruction", reconstruction[0:16], self.step_id)
+
+                if self.epoch_id > 15 and self.step_id % 200 == 0:
+                    grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=10)
+                    save_image(grid, f"{self.network_dir}/valid_results/valid_result-{self.epoch_id}-{self.step_id}.png",
+                               normalize=True)
 
     def train(self):
         """Trains a VQ-VAE until the maximum number of epochs is reached."""
@@ -523,6 +538,15 @@ class VQ_VAE_Training:
                         vdata, = next(valid_iter)
                     self.valid_step(vdata)
                 self.step_id += 1
+
+        if self.mode == Mode.vq_vae:
+            self.writer.add_embedding(self.vq_vae.vector_quantization.embedding,
+                                      metadata = list(range(0, self.num_emb)),
+                                      global_step=self.step_id)
+        else:
+            self.writer.add_embedding(self.vq_vae.vector_quantization_bottom.embedding,
+                                      metadata = list(range(0, self.num_emb["bottom"])),
+                                      global_step=self.step_id)
 
 
 if __name__ == '__main__':

@@ -85,7 +85,7 @@
   },
   "-maxepochs": {
     "short": "-me",
-    "value": 20,
+    "value": 80,
     "help": "Maximum nr of epochs to train the model",
     "type": "int"
   },
@@ -97,19 +97,19 @@
   },
     "-hidden_channels": {
     "short": "-hc",
-    "value": 256,
+    "value": 100,
     "help": "Number of hidden_channels",
     "type": "int"
   },
     "-num_emb": {
     "short": "-K",
-    "value": 512,
+    "value": 1000,
     "help": "Number of embedded vectors (in case of vq-vae)",
     "type": "int"
   },
   "-emb_dim": {
     "short": "-D",
-    "value": 100,
+    "value": 8,
     "help": "Size of each embedded vector (in case of vq-vae)",
     "type": "int"
   },

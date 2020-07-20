@@ -1,0 +1,73 @@
+"""
+Trigger training here
+"""
+import torch
+
+from utils.dataloader import Dataloader
+from utils.utils import setup
+from utils.models import VQ_VAE, VQ_VAE_2, Mode
+from utils.introspection import visualize_latent_space
+
+
+if __name__ == "__main__":
+
+    FLAGS, logger = setup(running_script="./utils/models.py", config="./config.json")
+    input_path = FLAGS.input
+    valid_path = FLAGS.valid
+    device = FLAGS.device if torch.cuda.is_available() else "cpu"
+
+    network_dir = f'{FLAGS.path_prefix}/models/{FLAGS.network_name}'
+
+    mode = Mode.vq_vae if FLAGS.mode == 1 else Mode.vq_vae_2
+
+    if mode == Mode.vq_vae:
+        num_emb=FLAGS.num_emb
+        emb_dim=FLAGS.emb_dim
+        size_latent_space = FLAGS.size_latent_space ** 2
+
+        vq_vae = VQ_VAE (
+                        training=True,
+                        hidden_channels=FLAGS.hidden_channels,
+                        num_emb=num_emb,
+                        emb_dim=emb_dim,
+                        ema=FLAGS.exponential_moving_averages,
+                        commitment_cost=0.25,
+                        gamma=0.99,
+                        epsilon=1e-5
+                        ).to(device=device)
+    else:
+        num_emb = {"top": FLAGS.num_emb_top, "bottom": FLAGS.num_emb_bottom}
+        emb_dim = {"top": FLAGS.emb_dim_top, "bottom": FLAGS.emb_dim_bottom}
+        size_latent_space = {"top": FLAGS.size_latent_space_top ** 2,
+                             "bottom": FLAGS.size_latent_space_bottom ** 2
+        }
+
+        vq_vae = VQ_VAE_2 (
+                        training=True,
+                        hidden_channels=FLAGS.hidden_channels,
+                        num_emb=num_emb,
+                        emb_dim=emb_dim,
+                        ema=FLAGS.exponential_moving_averages,
+                        commitment_cost=0.25,
+                        gamma=0.99,
+                        epsilon=1e-5
+                        ).to(device=device)
+
+    # Visualization of the latent space
+    test_path = FLAGS.test
+    test_data = Dataloader(test_path, batch_size=FLAGS.batch_size)
+
+    visualize_latent_space(test_data,
+                           test_path,
+                           FLAGS.csv,
+                           mode=mode,
+                           batch_size=FLAGS.batch_size,
+                           device=device,
+                           num_emb=num_emb,
+                           vq_vae=vq_vae,
+                           network_dir=network_dir,
+                           network_name=FLAGS.network_name,
+                           size_latent_space=size_latent_space,
+                           max_degree=FLAGS.maxdegree
+                            )
+

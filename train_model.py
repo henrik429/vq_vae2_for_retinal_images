@@ -72,22 +72,3 @@ if __name__ == "__main__":
     print('\nTraining with %i epochs done! Time elapsed: %.2f hours' % (FLAGS.maxepochs, (time.time() - time_start)/360))
 
     os.system(f"cp utils/models.py {network_dir}/models.py ")
-
-    # Visualization of the latent space
-    test_path = FLAGS.test
-    test_data = Dataloader(test_path, batch_size=FLAGS.batch_size)
-
-    visualize_latent_space(test_data,
-                           test_path,
-                           FLAGS.csv,
-                           mode=mode,
-                           device=device,
-                           num_emb=num_emb,
-                           vq_vae=vq_vae.vq_vae,
-                           writer=vq_vae.writer,
-                           network_dir=network_dir,
-                           network_name=FLAGS.network_name,
-                           size_latent_space=size_latent_space,
-                           max_degree=FLAGS.maxdegree
-    )
-

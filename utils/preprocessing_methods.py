@@ -5,15 +5,24 @@ from skimage import io, img_as_ubyte, transform
 def trim_image(jpg, dir, outdir):
     """Trims the black margins out of the image
     The original and returned images are rgb"""
-    img = io.imread(dir+jpg)
-    ts = (img > 6).sum(axis=1) > 30
-    ts = ts.sum(axis=1) != 0
-    img = img[ts]
-    ts = (img > 6).sum(axis=0) > 30
-    ts = ts.sum(axis=1) != 0
-    img = img[:,ts,:]
-    io.imsave(outdir + jpg, img)
-
+    try:
+        img = io.imread(dir+jpg)
+        ts = (img > 12).sum(axis=1) > 150
+        ts = ts.sum(axis=1) != 0
+        img = img[ts]
+        ts = (img > 12).sum(axis=0) > 150
+        ts = ts.sum(axis=1) != 0
+        img = img[:,ts,:]
+        io.imsave(outdir + jpg, img)
+    except IndexError:
+        img = io.imread(dir+jpg)
+        ts = (img > 5).sum(axis=1) > 20
+        ts = ts.sum(axis=1) != 0
+        img = img[ts]
+        ts = (img > 5).sum(axis=0) > 20
+        ts = ts.sum(axis=1) != 0
+        img = img[:,ts,:]
+        io.imsave(outdir + jpg, img)
 
 def rotate_image(img, outdir, fname, n_aug, max_rotation_angle, suffix):
     # Prerequisites for rotating: Only those images should be rotated on which the retina is a 'whole' circle
