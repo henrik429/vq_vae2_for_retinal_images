@@ -12,8 +12,6 @@ from utils.introspection import visualize_latent_space
 if __name__ == "__main__":
 
     FLAGS, logger = setup(running_script="./utils/models.py", config="./config.json")
-    input_path = FLAGS.input
-    valid_path = FLAGS.valid
     device = FLAGS.device if torch.cuda.is_available() else "cpu"
 
     network_dir = f'{FLAGS.path_prefix}/models/{FLAGS.network_name}'
@@ -35,6 +33,10 @@ if __name__ == "__main__":
                         gamma=0.99,
                         epsilon=1e-5
                         ).to(device=device)
+
+        vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
+        vq_vae.to(device)
+        vq_vae.eval()
     else:
         num_emb = {"top": FLAGS.num_emb_top, "bottom": FLAGS.num_emb_bottom}
         emb_dim = {"top": FLAGS.emb_dim_top, "bottom": FLAGS.emb_dim_bottom}

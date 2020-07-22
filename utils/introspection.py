@@ -106,27 +106,15 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
             plt.figure(figsize=(10, 7))
             plt.title(f"dendogram - embedded space - {method} - {metric}")
-            plt.savefig(f"{network_dir}/visualizations/dendrogram_embbeding_{method}_{metric}.png")
             hierarchy.dendrogram(Z)
             plt.xlabel("index of embedded vector")
             plt.show(block=False)
+            plt.savefig(f"{network_dir}/visualizations/dendrogram_embbeding_{method}_{metric}.png")
             plt.pause(4)
             plt.close()
 
             # Plot hierarchical clustering with (TSNE,) PCA or UMAP Plot
             cluster = hierarchy.fcluster(Z, t=5, criterion='maxclust') - 1
-
-            """
-            fig = plt.figure()
-            ax = plt.axes(projection='3d')
-            ax.set_title(f"TSNE - embedded space - {method} - {metric} \n")
-            ax.scatter(tsne_emb[:, 0], tsne_emb[:, 1], tsne_emb[:, 2], c=colormap[cluster], label=colormap)
-            plt.legend(handles=patches)
-            plt.show(block=False)
-            plt.pause(2)
-            plt.savefig(f"{network_dir}/visualizations/hierarchical_clustering_embedding_tsne_{method}_{metric}.png")
-            plt.close(fig)
-            """
 
             fig = plt.figure()
             ax = plt.axes(projection='3d')
@@ -139,47 +127,27 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
             plt.close(fig)
 
             # Use outcome of optimal order of distances to plot the heatmap
-            optimal_indices_order = hierarchy.leaves_list(Z)
             emb_distances_matrix = squareform(emb_distances_vector)
 
             plt.figure(figsize=(7, 7))
             mask = np.zeros_like(emb_distances_matrix)
             mask[np.triu_indices_from(mask)] = True
             with sns.axes_style("white"):
-                sns.heatmap(emb_distances_matrix[optimal_indices_order],
+                sns.heatmap(emb_distances_matrix[hierarchy.leaves_list(Z)],
                             cmap="YlGnBu",
                             mask=mask,
                             linewidth=0.0,
                             square=True)  # sns.clustermap also possible
                 plt.title(f"Heatmap - Embedded Space - {method} - {metric}", fontsize=13, fontweight='bold')
                 plt.savefig(f"{network_dir}/visualizations/heatmap_embeddings_{method}_{metric}.png")
-                # plt.xlabel("Index of embedded vector")
-                # plt.ylabel("Index of embedded vector")
+                plt.xlabel("index of embedded vector")
+                plt.ylabel("index of embedded vector")
                 plt.show(block=False)
                 plt.pause(3)
                 plt.close()
 
     # Plot embedded space with original order
-    # TODO: Remove TSNE-Visualization??
-
-    """
-    # Using T-SNE
-    tsne_emb = TSNE(n_components=3).fit_transform(embeddings)
-
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.set_title("tSNE Clustering - Embedded Space - original order\n")
-    scatter = ax.scatter(tsne_emb[:, 0], tsne_emb[:, 1], tsne_emb[:, 2], s=3,
-                         c=np.arange(0, num_emb))
-    cbar = fig.colorbar(scatter)
-    cbar.set_label("Index of embedded vector", labelpad=+1)
-    plt.savefig(f"{network_dir}/visualizations/umap_clustering_original_order.png")
-    plt.show(block=False)
-    plt.pause(3)
-    plt.close(fig)
-    """
-
-     # Using U-Map
+    # Using U-Map
     umap_emb = UMAP(n_neighbors=40,
                     min_dist=0.01,
                     n_components=3,
@@ -211,36 +179,13 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     plt.close(fig)
 
     # Plot embedded space with optimal order
-    embeddings = embeddings[best_order]
-
-    """
-    # Using T-SNE
-    tsne_emb = TSNE(n_components=3).fit_transform(embeddings)
-
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.set_title("tSNE Clustering - Embedded Space - best order\n")
-    scatter = ax.scatter(tsne_emb[:, 0], tsne_emb[:, 1], tsne_emb[:, 2], s=10,
-                      c=np.arange(0, num_emb))
-    cbar = fig.colorbar(scatter)
-    cbar.set_label("index of embedded vector", labelpad=+1)
-    plt.savefig(f"{network_dir}/visualizations/tsne_clustering_best_order.png")
-    plt.show(block=False)
-    plt.pause(3)
-    plt.close(fig)
-    """
-
     # Using U-Map
-    umap_emb = UMAP(n_neighbors=40,
-                    min_dist=0.01,
-                    n_components=3,
-                    # random_state=42
-                    ).fit_transform(embeddings)
+    umap_emb = umap_emb[best_order]
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
     ax.set_title("UMAP Clustering - Embedded Space - original order\n")
-    scatter = ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], s=3)
+    scatter = ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], s=1)
     cbar = plt.colorbar(scatter)
     cbar.set_label("Index", labelpad=+1)
     plt.savefig(f"{network_dir}/visualizations/umap_clustering_embeddings_original_order.png")
@@ -248,15 +193,12 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     plt.close(fig)
 
     # Using PCA
-    pca = PCA(n_components=num_components).fit(embeddings)
-    for i in range(num_components):
-        print("Explained variance of component {}: {}".format(i + 1, pca.explained_variance_ratio_[i]))
-    pca = pca.transform(embeddings)
+    pca = pca[best_order]
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
     ax.set_title("PCA Clustering - Embedded Space - best order\n")
-    scatter = ax.scatter(pca[:, 0], pca[:, 1], pca[:, 2], s=10,
+    scatter = ax.scatter(pca[:, 0], pca[:, 1], pca[:, 2], s=1,
                          c=np.arange(0, num_emb))
     cbar = fig.colorbar(scatter)
     cbar.set_label("index of embedded vector", labelpad=+1)
@@ -308,8 +250,8 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
     # U-Map Visualization
     clusterable_embedding = UMAP(
-        n_neighbors=110,
-        min_dist=0.01,
+        n_neighbors=100,
+        min_dist=0.0005,
         n_components=2,
         #random_state=42,
     ).fit_transform(encodings)
@@ -322,58 +264,24 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     for i in pos_to_delete:
         print(jpg_list[i])
 
-    print(encodings.shape)
     encodings = np.delete(encodings, pos_to_delete, axis=0)
-    print(encodings.shape)
-    #encodings = encodings.reshape(data_size - pos_to_delete.shape[0], size_latent_space)
     targets = np.delete(targets, pos_to_delete, axis=0)
-    #targets = targets.reshape(data_size - pos_to_delete.shape[0], size_latent_space)
 
     clusterable_embedding = UMAP(
-        n_neighbors=110,
-        min_dist=0.01,
+        n_neighbors=100,
+        min_dist=0.0005,
         n_components=2,
         #random_state=42,
     ).fit_transform(encodings)
 
     plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
                 c=colormap[targets],
-                s=0.7
+                s=0.5
                 )
     plt.legend(handles=patches)
     plt.title(f"UMAP-Visualization - latents", fontsize=13, fontweight='bold')
     plt.savefig(f"{network_dir}/visualizations/umap_visualization_latents.png")
     plt.show()
-    plt.close()
-
-    # tSNE Visualization of the encoded latent vector
-    tsne = TSNE(n_components=2).fit_transform(encodings)
-
-    # Remove outliers
-    z = np.abs(stats.zscore(tsne))
-    pos_to_delete, = np.where(np.amax(z, axis=1) > threshold)
-
-    print(f"\n{pos_to_delete.shape[0]} outliers:")
-    for i in pos_to_delete:
-        print(jpg_list[i])
-
-    encodings = np.delete(encodings, pos_to_delete, axis=0)
-    #encodings = encodings.reshape(data_size - pos_to_delete.shape[0], size_latent_space)
-    targets = np.delete(targets, pos_to_delete, axis=0)
-    #targets = targets.reshape(data_size - pos_to_delete.shape[0], size_latent_space)
-
-    # Apply tSNE without outliers
-    tsne = TSNE(n_components=2).fit_transform(encodings)
-    plt.scatter(tsne[:, 0], tsne[:, 1],
-                c=colormap[targets],
-                s=0.7
-                )
-
-    plt.legend(handles=patches)
-    plt.title(f"tSNE-Visualization - latents", fontsize=13, fontweight='bold')
-    plt.savefig(f"{network_dir}/visualizations/tsne_visualization_latents.png")
-    plt.show(block=False)
-    plt.pause(5)
     plt.close()
 
     data = [[] for _ in range(levels)]
@@ -427,7 +335,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
             plt.bar(np.arange(0, num_emb["bottom"]), bins_bottom)
             plt.title(f"percentaged frequencies - \'{disease_states[j]}\' - bottom level ",
                       fontsize=13,
-                      # fontweight='bold'
+                      fontweight='bold'
                       )
             plt.savefig(f"{network_dir}/visualizations/histogram_{disease_states[j]}_bottom.png")
             plt.xlabel("index")
@@ -440,17 +348,19 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
             for i, d in enumerate(level_data):
                 d = d.permute(0, 3, 1, 2).float().to(device)
                 indices = vq_vae.encode(d)
-                indices = indices.to("cpu").detach().numpy().astype(np.uint8)
+                indices = indices.to("cpu").detach().numpy().astype(np.uint32)
 
                 for index in indices.ravel():
                     histograms[j][index] += 1
 
             # Normalize histogram and sort indices of embedded vectors regarding best order
+            # print("aloha -------------", histograms[j][0:1000:10])
             histograms[j] = np.divide(histograms[j], histograms[j].sum())[best_order]
+            # print("aloha", histograms[j][0:1000:10])
 
     hist_intersection = np.amin(histograms, axis=0)
 
-    for hist in histograms:
+    for j, hist in enumerate(histograms):
         plt.hist(hist, bins=num_emb)
         plt.title(f"percentaged frequencies - \'{disease_states[j]}\'",
                   fontsize=13,

@@ -128,7 +128,8 @@ class Vector_Quantization(nn.Module):
                  training=False,
                  ema=False,
                  gamma=0.99,
-                 epsilon=1e-5):
+                 epsilon=1e-5
+                 ):
         super().__init__()
 
         if emb_dim is None:
@@ -139,7 +140,8 @@ class Vector_Quantization(nn.Module):
         self.emb_dim = emb_dim
         self.num_emb = num_emb
         self.embedding = nn.Parameter(torch.Tensor(self.num_emb, self.emb_dim))
-        self.embedding.data.normal_()
+        # self.embedding.data.normal_()
+
         self.embedding.data.uniform_(-self.num_emb, self.num_emb)
 
         self.register_buffer("embed", self.embedding)
