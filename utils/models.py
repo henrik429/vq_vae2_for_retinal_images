@@ -141,8 +141,7 @@ class Vector_Quantization(nn.Module):
         self.num_emb = num_emb
         self.embedding = nn.Parameter(torch.Tensor(self.num_emb, self.emb_dim))
         # self.embedding.data.normal_()
-
-        self.embedding.data.uniform_(-self.num_emb, self.num_emb)
+        self.embedding.data.uniform_(-1/self.num_emb, 1/self.num_emb)
 
         self.register_buffer("embed", self.embedding)
         self.register_buffer("cluster_size", torch.zeros(self.num_emb))
@@ -524,10 +523,11 @@ class VQ_VAE_Training:
             if self.valid_data is not None:
                 valid_iter = iter(self.valid_data)
 
+            print(self.vq_vae.vector_quantization.embedding)
+
             for data, in self.train_data:
                 self.step(data)
-                if self.step_id % self.checkpoint_interval == 0 and self.epoch_id == 0 \
-                    or (self.vq_vae.total_loss < best_loss):
+                if self.epoch_id == 0 or (self.vq_vae.total_loss < best_loss):
 
                     path = f'{self.network_dir}/{self.network_name}.pth'
                     torch.save(self.vq_vae.state_dict(), path)
@@ -540,6 +540,9 @@ class VQ_VAE_Training:
                         vdata, = next(valid_iter)
                     self.valid_step(vdata)
                 self.step_id += 1
+
+        path = f'{self.network_dir}/{self.network_name}.pth'
+        torch.save(self.vq_vae.state_dict(), path)
 
         if self.mode == Mode.vq_vae:
             self.writer.add_embedding(self.vq_vae.vector_quantization.embedding,

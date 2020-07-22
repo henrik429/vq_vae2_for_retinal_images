@@ -32,11 +32,13 @@ if __name__ == "__main__":
                         commitment_cost=0.25,
                         gamma=0.99,
                         epsilon=1e-5
-                        ).to(device=device)
+                        )
 
         vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
-        vq_vae.to(device)
+        vq_vae.to(device=device)
         vq_vae.eval()
+        ind = vq_vae.encode(torch.randn((10, 3, 256, 256)).to(device)).cpu().detach().numpy()
+        print(ind)
     else:
         num_emb = {"top": FLAGS.num_emb_top, "bottom": FLAGS.num_emb_bottom}
         emb_dim = {"top": FLAGS.emb_dim_top, "bottom": FLAGS.emb_dim_bottom}

@@ -83,7 +83,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
     # save best order of embedded vectors
     best_order, best_c = None, 0
-    for method in ['single', 'average', 'weighted', 'complete', 'centroid',  'median', 'ward']:
+    for method in ['single', 'average', 'weighted', 'complete', 'median', 'ward']:
         # methods single, median, centroid and complete seems to be unsuitable
 
         if method not in ['centroid', 'median', 'ward']:
@@ -236,22 +236,24 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
     encodings = torch.zeros((data_size, size_latent_space))
     print("Generate encodings...")
-    for i, (data,) in tqdm(enumerate(test_data)):
-        data = data.to(device)
-        if mode == Mode.vq_vae_2:
-            indices_top, indices_bottom = vq_vae.encode((data))
-            indices = torch.cat((indices_top, indices_bottom), dim=0).view(-1, size_latent_space)
-        else:
-            indices = vq_vae.encode((data))
+    with torch.no_grad():
+        for i, (data,) in tqdm(enumerate(test_data)):
+            data = data.to(device)
+            if mode == Mode.vq_vae_2:
+                indices_top, indices_bottom = vq_vae.encode((data))
+                indices = torch.cat((indices_top, indices_bottom), dim=0).view(-1, size_latent_space)
+            else:
+                indices = vq_vae.encode((data))
 
-        encodings[i:i + data.size(0)] = indices.reshape(data.size(0), size_latent_space)
+            encodings[i:i + data.size(0)] = indices.reshape(data.size(0), size_latent_space)
 
+    print("sdsd", encodings[0][:300])
     encodings = encodings.detach().numpy()
 
     # U-Map Visualization
     clusterable_embedding = UMAP(
-        n_neighbors=100,
-        min_dist=0.0005,
+        n_neighbors=80,
+        min_dist=0.0,
         n_components=2,
         #random_state=42,
     ).fit_transform(encodings)
@@ -268,8 +270,8 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     targets = np.delete(targets, pos_to_delete, axis=0)
 
     clusterable_embedding = UMAP(
-        n_neighbors=100,
-        min_dist=0.0005,
+        n_neighbors=80,
+        min_dist=0.0,
         n_components=2,
         #random_state=42,
     ).fit_transform(encodings)
@@ -345,18 +347,22 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
             plt.close()
 
         else:
-            for i, d in enumerate(level_data):
-                d = d.permute(0, 3, 1, 2).float().to(device)
-                indices = vq_vae.encode(d)
-                indices = indices.to("cpu").detach().numpy().astype(np.uint32)
+            with torch.no_grad():
+                for i, d in enumerate(level_data):
+                    d = d.permute(0, 3, 1, 2).float().to(device)
+                    indices = vq_vae.encode(d)
+                    print("\nindices}\n", indices[0:100000:100])
 
-                for index in indices.ravel():
-                    histograms[j][index] += 1
+                    indices = indices.to("cpu").detach().numpy().astype(np.int32)
 
-            # Normalize histogram and sort indices of embedded vectors regarding best order
-            # print("aloha -------------", histograms[j][0:1000:10])
-            histograms[j] = np.divide(histograms[j], histograms[j].sum())[best_order]
-            # print("aloha", histograms[j][0:1000:10])
+                    print("\nindices}\n", indices[0:100000:100])
+                    for index in indices.ravel():
+                        histograms[j][index] += 1
+
+                # Normalize histogram and sort indices of embedded vectors regarding best order
+                print("aloha -------------", histograms[j][0:1000:10])
+                histograms[j] = np.divide(histograms[j], histograms[j].sum())[best_order]
+                # print("aloha", histograms[j][0:1000:10])
 
     hist_intersection = np.amin(histograms, axis=0)
 
