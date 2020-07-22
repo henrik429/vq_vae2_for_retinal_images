@@ -21,7 +21,7 @@ rule all:
         expand("{port}/vis.done", port = config['PORT'])
     run:
         path = os.path.abspath(str(path_prefix) + "/models/" + str(networkname))
-        os.system(f"rm {port}/training.done")
+        os.system(f"rm {port}/vis.done")
         shell("tensorboard --logdir %s --port {port}" % path)
 
 
