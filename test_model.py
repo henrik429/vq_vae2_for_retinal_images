@@ -36,15 +36,14 @@ if __name__ == "__main__":
 
         vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
         vq_vae.to(device=device)
-        vq_vae.eval()
+        #vq_vae.eval()
+        #print(vq_vae.vector_quantization.embedding)
         ind = vq_vae.encode(torch.randn((10, 3, 256, 256)).to(device)).cpu().detach().numpy()
-        print(ind)
+        print(ind[0:100000:50])
     else:
-        num_emb = {"top": FLAGS.num_emb_top, "bottom": FLAGS.num_emb_bottom}
-        emb_dim = {"top": FLAGS.emb_dim_top, "bottom": FLAGS.emb_dim_bottom}
-        size_latent_space = {"top": FLAGS.size_latent_space_top ** 2,
-                             "bottom": FLAGS.size_latent_space_bottom ** 2
-        }
+        num_emb = FLAGS.num_emb_bottom
+        emb_dim = FLAGS.emb_dim_bottom
+        size_latent_space = FLAGS.size_latent_space_bottom ** 2
 
         vq_vae = VQ_VAE_2 (
                         training=True,

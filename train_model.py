@@ -9,7 +9,6 @@ import time
 from utils.dataloader import Dataloader
 from utils.utils import setup
 from utils.models import VQ_VAE_Training, Mode
-from utils.introspection import visualize_latent_space
 
 
 if __name__ == "__main__":

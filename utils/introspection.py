@@ -1,5 +1,4 @@
 from umap import UMAP
-from sklearn.manifold._t_sne import TSNE
 import matplotlib.pyplot as plt
 from pandas import read_csv
 import torch
@@ -59,8 +58,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     makedirs(f'{network_dir}/histograms/', exist_ok=True)
 
     if mode == Mode.vq_vae_2:
-        size_latent_space = size_latent_space["top"] + size_latent_space["bottom"]
-        embeddings = vq_vae.emb_bottom.embedding.detach().numpy()
+        embeddings = vq_vae.emb_bottom.embedding.detach().cpu().numpy()
     else:
         embeddings = vq_vae.vector_quantization.embedding.detach().cpu().numpy()
 
@@ -96,55 +94,58 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
             metrics = ['euclidean']
 
         for metric in metrics:
-            Z = hierarchy.linkage(embeddings, method=method, metric=metric, optimal_ordering=True)
-            emb_distances_vector = pdist(embeddings, metric=metric)
-            c, coph_dists = hierarchy.cophenet(Z, emb_distances_vector)
-            print(f"The Cophenetic Correlation Coefficient of method: {method} and metric: {metric} is: %.4f" % c)
+            try :
+                Z = hierarchy.linkage(embeddings, method=method, metric=metric, optimal_ordering=True)
+                emb_distances_vector = pdist(embeddings, metric=metric)
+                c, coph_dists = hierarchy.cophenet(Z, emb_distances_vector)
+                print(f"The Cophenetic Correlation Coefficient of method: {method} and metric: {metric} is: %.4f" % c)
 
-            if c > best_c:
-                best_order = hierarchy.leaves_list(Z)
+                if c > best_c:
+                    best_order = hierarchy.leaves_list(Z)
 
-            plt.figure(figsize=(10, 7))
-            plt.title(f"dendogram - embedded space - {method} - {metric}")
-            hierarchy.dendrogram(Z)
-            plt.xlabel("index of embedded vector")
-            plt.show(block=False)
-            plt.savefig(f"{network_dir}/visualizations/dendrogram_embbeding_{method}_{metric}.png")
-            plt.pause(4)
-            plt.close()
-
-            # Plot hierarchical clustering with (TSNE,) PCA or UMAP Plot
-            cluster = hierarchy.fcluster(Z, t=5, criterion='maxclust') - 1
-
-            fig = plt.figure()
-            ax = plt.axes(projection='3d')
-            ax.set_title(f"PCA - embedded space - {method} - {metric} \n")
-            ax.scatter(pca[:, 0], pca[:, 1], pca[:, 2], c=colormap[cluster], s=1, label=colormap)
-            plt.legend(handles=patches)
-            plt.show(block=False)
-            plt.pause(3)
-            plt.savefig(f"{network_dir}/visualizations/hierarchical_clustering_embedding_pca_{method}_{metric}.png")
-            plt.close(fig)
-
-            # Use outcome of optimal order of distances to plot the heatmap
-            emb_distances_matrix = squareform(emb_distances_vector)
-
-            plt.figure(figsize=(7, 7))
-            mask = np.zeros_like(emb_distances_matrix)
-            mask[np.triu_indices_from(mask)] = True
-            with sns.axes_style("white"):
-                sns.heatmap(emb_distances_matrix[hierarchy.leaves_list(Z)],
-                            cmap="YlGnBu",
-                            mask=mask,
-                            linewidth=0.0,
-                            square=True)  # sns.clustermap also possible
-                plt.title(f"Heatmap - Embedded Space - {method} - {metric}", fontsize=13, fontweight='bold')
-                plt.savefig(f"{network_dir}/visualizations/heatmap_embeddings_{method}_{metric}.png")
+                plt.figure(figsize=(10, 7))
+                plt.title(f"dendogram - embedded space - {method} - {metric}")
+                hierarchy.dendrogram(Z)
                 plt.xlabel("index of embedded vector")
-                plt.ylabel("index of embedded vector")
+                plt.show(block=False)
+                plt.savefig(f"{network_dir}/visualizations/dendrogram_embbeding_{method}_{metric}.png")
+                plt.pause(4)
+                plt.close()
+
+                # Plot hierarchical clustering with (TSNE,) PCA or UMAP Plot
+                cluster = hierarchy.fcluster(Z, t=5, criterion='maxclust') - 1
+
+                fig = plt.figure()
+                ax = plt.axes(projection='3d')
+                ax.set_title(f"PCA - embedded space - {method} - {metric} \n")
+                ax.scatter(pca[:, 0], pca[:, 1], pca[:, 2], c=colormap[cluster], s=1, label=colormap)
+                plt.legend(handles=patches)
                 plt.show(block=False)
                 plt.pause(3)
-                plt.close()
+                plt.savefig(f"{network_dir}/visualizations/hierarchical_clustering_embedding_pca_{method}_{metric}.png")
+                plt.close(fig)
+
+                # Use outcome of optimal order of distances to plot the heatmap
+                emb_distances_matrix = squareform(emb_distances_vector)
+
+                plt.figure(figsize=(7, 7))
+                mask = np.zeros_like(emb_distances_matrix)
+                mask[np.triu_indices_from(mask)] = True
+                with sns.axes_style("white"):
+                    sns.heatmap(emb_distances_matrix[hierarchy.leaves_list(Z)],
+                                cmap="YlGnBu",
+                                mask=mask,
+                                linewidth=0.0,
+                                square=True)  # sns.clustermap also possible
+                    plt.title(f"Heatmap - Embedded Space - {method} - {metric}", fontsize=13, fontweight='bold')
+                    plt.savefig(f"{network_dir}/visualizations/heatmap_embeddings_{method}_{metric}.png")
+                    plt.xlabel("index of embedded vector")
+                    plt.ylabel("index of embedded vector")
+                    plt.show(block=False)
+                    plt.pause(3)
+                    plt.close()
+            except ValueError:
+                pass
 
     # Plot embedded space with original order
     # Using U-Map
@@ -247,7 +248,6 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
             encodings[i:i + data.size(0)] = indices.reshape(data.size(0), size_latent_space)
 
-    print("sdsd", encodings[0][:300])
     encodings = encodings.detach().numpy()
 
     # U-Map Visualization
@@ -309,60 +309,26 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         level_data = DataLoader(torch.tensor(level_data), batch_size=batch_size)
 
         if mode == Mode.vq_vae_2:
-            bins_top = np.zeros(num_emb["top"])
-            bins_bottom = np.zeros(num_emb["bottom"])
             for i, d in enumerate(level_data):
                 d = d.permute(0, 3, 1, 2).float().to(device)
-                indices_top, indices_bottom = vq_vae.encode(d)
+                indices_bottom = vq_vae.encode(d)
                 indices_bottom = indices_bottom.to("cpu").detach().numpy().astype(np.uint8)
-                indices_top = indices_top.to("cpu").detach().numpy().astype(np.uint8)
 
-                for index in indices_top.ravel():
-                    bins_top[index] += 1
                 for index in indices_bottom.ravel():
-                    bins_bottom[index] += 1
-
-            plt.bar(np.arange(0, num_emb["top"]), bins_top)
-            plt.title(f"Histogram - \'{disease_states[j]}\' - top level ",
-                      fontsize=13,
-                      fontweight='bold'
-                      )
-            plt.savefig(f"{network_dir}/visualizations/histogram_{disease_states[j]}_top.png")
-            plt.xlabel("Index")
-            plt.ylabel("Number embedded vectors")
-            plt.show(block=False)
-            plt.pause(3)
-            plt.close()
-
-            plt.bar(np.arange(0, num_emb["bottom"]), bins_bottom)
-            plt.title(f"percentaged frequencies - \'{disease_states[j]}\' - bottom level ",
-                      fontsize=13,
-                      fontweight='bold'
-                      )
-            plt.savefig(f"{network_dir}/visualizations/histogram_{disease_states[j]}_bottom.png")
-            plt.xlabel("index")
-            plt.ylabel("ratio of embedded vector")
-            plt.show(block=False)
-            plt.pause(2)
-            plt.close()
-
+                    histograms[j][index] += 1
         else:
             with torch.no_grad():
                 for i, d in enumerate(level_data):
                     d = d.permute(0, 3, 1, 2).float().to(device)
                     indices = vq_vae.encode(d)
-                    print("\nindices}\n", indices[0:100000:100])
 
                     indices = indices.to("cpu").detach().numpy().astype(np.int32)
 
-                    print("\nindices}\n", indices[0:100000:100])
                     for index in indices.ravel():
                         histograms[j][index] += 1
 
                 # Normalize histogram and sort indices of embedded vectors regarding best order
-                print("aloha -------------", histograms[j][0:1000:10])
                 histograms[j] = np.divide(histograms[j], histograms[j].sum())[best_order]
-                # print("aloha", histograms[j][0:1000:10])
 
     hist_intersection = np.amin(histograms, axis=0)
 
