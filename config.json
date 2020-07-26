@@ -97,7 +97,7 @@
   },
     "-hidden_channels": {
     "short": "-hc",
-    "value": 100,
+    "value": 75,
     "help": "Number of hidden_channels",
     "type": "int"
   },
@@ -115,7 +115,7 @@
   },
   "-num_emb_top": {
     "short": "-K_top",
-    "value": 128,
+    "value": 64,
     "help": "Number of embedded vectors ",
     "type": "int"
   },

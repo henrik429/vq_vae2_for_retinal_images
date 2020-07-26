@@ -13,7 +13,6 @@ from scipy.spatial.distance import pdist, squareform
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 from sklearn.decomposition._pca import PCA
 from scipy.cluster import hierarchy
-from scipy.spatial.distance import pdist
 from scipy import stats
 
 import seaborn as sns
@@ -58,7 +57,8 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     makedirs(f'{network_dir}/histograms/', exist_ok=True)
 
     if mode == Mode.vq_vae_2:
-        embeddings = vq_vae.emb_bottom.embedding.detach().cpu().numpy()
+        embeddings = vq_vae.vector_quantization_bottom.embedding.detach().cpu().numpy()
+        num_emb = num_emb["bottom"]
     else:
         embeddings = vq_vae.vector_quantization.embedding.detach().cpu().numpy()
 
@@ -241,8 +241,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         for i, (data,) in tqdm(enumerate(test_data)):
             data = data.to(device)
             if mode == Mode.vq_vae_2:
-                indices_top, indices_bottom = vq_vae.encode((data))
-                indices = torch.cat((indices_top, indices_bottom), dim=0).view(-1, size_latent_space)
+                indices = vq_vae.encode((data))
             else:
                 indices = vq_vae.encode((data))
 
@@ -303,10 +302,12 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     """
     Split test data in specific levels and build histograms over these groups.
     """
-    histograms = np.zeros((levels, num_emb))
+    histograms = np.zeros((levels, num_emb), dtype=np.float)
     print("Generate histograms...")
     for j, level_data in tqdm(enumerate(data)):
-        level_data = DataLoader(torch.tensor(level_data), batch_size=batch_size)
+        level_data = torch.tensor(level_data)
+        divider = level_data.size(0) + size_latent_space   # for normalized histogram
+        level_data = DataLoader(level_data, batch_size=batch_size)
 
         if mode == Mode.vq_vae_2:
             for i, d in enumerate(level_data):
@@ -315,7 +316,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                 indices_bottom = indices_bottom.to("cpu").detach().numpy().astype(np.uint8)
 
                 for index in indices_bottom.ravel():
-                    histograms[j][index] += 1
+                    histograms[j][index] += 1/divider
         else:
             with torch.no_grad():
                 for i, d in enumerate(level_data):
@@ -325,10 +326,10 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                     indices = indices.to("cpu").detach().numpy().astype(np.int32)
 
                     for index in indices.ravel():
-                        histograms[j][index] += 1
+                        histograms[j][index] += 1/divider
 
-                # Normalize histogram and sort indices of embedded vectors regarding best order
-                histograms[j] = np.divide(histograms[j], histograms[j].sum())[best_order]
+                # Sort indices of embedded vectors regarding best order
+                histograms[j] = histograms[j][best_order]
 
     hist_intersection = np.amin(histograms, axis=0)
 
