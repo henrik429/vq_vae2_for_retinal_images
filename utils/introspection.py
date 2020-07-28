@@ -312,6 +312,16 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     """
     Split test data in specific levels and build histograms over these groups.
     """
+    # Plot overlap of histograms
+    plt.figure(figsize=(12, 12))
+    plt.title("Oerlap of Histograms of all Disease States",
+              fontsize=13,
+              fontweight='bold')
+    plt.xlabel("Index")
+    plt.ylabel("Ratio of Embedded Vector")
+    plt.legend(loc='upper right')
+    plt.grid(alpha=0.4)
+
     histograms = np.zeros((levels, num_emb), dtype=np.float64)
     print("Generate histograms...")
     for j, level_data in tqdm(enumerate(data)):
@@ -333,8 +343,13 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                     counts_to_add = np.bincount(indices.ravel(), minlength=num_emb)
                     counts = np.add(counts, counts_to_add)
 
+        plt.hist(counts, bins=np.arange(num_emb), density=True, label=disease_states[j])
+
         # Normalize counts
         histograms[j] = np.divide(counts, np.sum(counts))
+
+    plt.savefig(f"{network_dir}/histograms/overlap_of_histograms.png")
+    plt.close()
 
     hist_intersection = np.amin(histograms, axis=0)
 
@@ -342,49 +357,33 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         # Sort indices of embedded vectors regarding best order
         hist = hist[best_order]
 
-        #plt.hist(hist, bins=np.arange(num_emb), density=True)
         plt.bar(np.arange(num_emb), hist)
-        plt.title(f"percentaged frequencies - \'{disease_states[j]}\'",
+        plt.title(f"Percentaged Frequencies - \'{disease_states[j]}\'",
                   fontsize=13,
                   fontweight='bold'
                   )
-        plt.xlabel("index")
-        plt.ylabel("ratio of embedded vector")
-        plt.grid()
+        plt.xlabel("Index")
+        plt.ylabel("Ratio of Embedded Vector")
+        plt.grid(alpha=0.4)
         plt.savefig(f"{network_dir}/histograms/histogram_{disease_states[j]}.png")
         plt.show(block=False)
         plt.pause(2)
         plt.close()
 
-        #plt.hist(np.subtract(hist, hist_intersection), bins=np.arange(num_emb), density=True)
-        plt.bar(np.arange(num_emb), np.subtract(hist, hist_intersection))
-        plt.title(f"percentaged frequencies - \'{disease_states[j]}\' - difference",
+        plt.bar(np.arange(num_emb), np.subtract(hist, hist_intersection[best_order]))
+        plt.title(f"Percentaged Frequencies - Difference - \'{disease_states[j]}\' ",
                   fontsize=13,
                   fontweight='bold'
                   )
-        plt.grid()
-        plt.xlabel("index")
-        plt.ylabel("ratio of embedded vector")
+        plt.grid(alpha=0.4)
+        plt.xlabel("Index")
+        plt.ylabel("Ratio of Embedded Vector")
         plt.savefig(f"{network_dir}/histograms/histogram_{disease_states[j]}_diff.png")
         plt.show(block=False)
         plt.pause(2)
         plt.close()
 
-    # Plot overlap of histograms
-    plt.figure(figsize=(12, 12))
-    for i, hist in enumerate(histograms):
-        hist = hist[best_order]
-        #plt.hist(hist, bins=np.arange(num_emb), density=True, alpha=0.5, label=disease_states[i])
-        plt.bar(np.arange(num_emb), hist, color=colormap[i])
 
-    plt.title("multiple histograms of all disease states",
-              fontsize=13,
-              fontweight='bold')
-    plt.legend(loc='upper right')
-    plt.grid()
-    plt.show()
-    plt.savefig(f"{network_dir}/histograms/overlap_of_histogram.png")
-    plt.close()
 
 
 
