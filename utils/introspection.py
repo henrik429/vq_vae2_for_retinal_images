@@ -316,7 +316,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     print("Generate histograms...")
     for j, level_data in tqdm(enumerate(data)):
         level_data = torch.tensor(level_data)
-        bins = np.zeros(num_emb)
+        counts = np.zeros(num_emb)
         level_data = DataLoader(level_data, batch_size=batch_size)
         with torch.no_grad():
             for i, d in enumerate(level_data):
@@ -325,15 +325,16 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                 if mode == Mode.vq_vae_2:
                     indices_bottom = vq_vae.encode(d)
                     indices_bottom = indices_bottom.cpu().detach().numpy().astype(np.uint16)
-                    bins_to_add = np.bincount(indices_bottom.ravel(), minlength=num_emb)
-                    bins = np.add(bins, bins_to_add)
+                    counts_to_add = np.bincount(indices_bottom.ravel(), minlength=num_emb)
+                    counts = np.add(counts, counts_to_add)
                 else:
                     indices = vq_vae.encode(d)
                     indices = indices.cpu().detach().numpy().astype(np.uint16)
-                    bins_to_add = np.bincount(indices.ravel(), minlength=num_emb)
-                    bins = np.add(bins, bins_to_add)
+                    counts_to_add = np.bincount(indices.ravel(), minlength=num_emb)
+                    counts = np.add(counts, counts_to_add)
 
-        histograms[j] = bins
+        # Normalize counts
+        histograms[j] = np.divide(counts, np.sum(counts))
 
     hist_intersection = np.amin(histograms, axis=0)
 
@@ -341,7 +342,8 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         # Sort indices of embedded vectors regarding best order
         hist = hist[best_order]
 
-        plt.hist(hist, bins=np.arange(num_emb), density=True)
+        #plt.hist(hist, bins=np.arange(num_emb), density=True)
+        plt.bar(np.arange(num_emb), hist)
         plt.title(f"percentaged frequencies - \'{disease_states[j]}\'",
                   fontsize=13,
                   fontweight='bold'
@@ -349,19 +351,18 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         plt.xlabel("index")
         plt.ylabel("ratio of embedded vector")
         plt.grid()
-        #plt.ylim(0.0, 1.0)
         plt.savefig(f"{network_dir}/histograms/histogram_{disease_states[j]}.png")
         plt.show(block=False)
         plt.pause(2)
         plt.close()
 
-        plt.hist(np.subtract(hist, hist_intersection), bins=np.arange(num_emb), density=True)
+        #plt.hist(np.subtract(hist, hist_intersection), bins=np.arange(num_emb), density=True)
+        plt.bar(np.arange(num_emb), np.subtract(hist, hist_intersection))
         plt.title(f"percentaged frequencies - \'{disease_states[j]}\' - difference",
                   fontsize=13,
                   fontweight='bold'
                   )
         plt.grid()
-        #plt.ylim(0.0, 1.0)
         plt.xlabel("index")
         plt.ylabel("ratio of embedded vector")
         plt.savefig(f"{network_dir}/histograms/histogram_{disease_states[j]}_diff.png")
@@ -372,8 +373,10 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     # Plot overlap of histograms
     plt.figure(figsize=(12, 12))
     for i, hist in enumerate(histograms):
-        plt.hist(hist, bins=np.arange(num_emb), density=True, alpha=0.5, label=disease_states[i])
-    #plt.ylim(0.0, 1.0)
+        hist = hist[best_order]
+        #plt.hist(hist, bins=np.arange(num_emb), density=True, alpha=0.5, label=disease_states[i])
+        plt.bar(np.arange(num_emb), hist, color=colormap[i])
+
     plt.title("multiple histograms of all disease states",
               fontsize=13,
               fontweight='bold')
