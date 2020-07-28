@@ -333,17 +333,17 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                 d = d.permute(0, 3, 1, 2).float().to(device)
 
                 if mode == Mode.vq_vae_2:
-                    indices_bottom = vq_vae.encode(d)
-                    indices_bottom = indices_bottom.cpu().detach().numpy().astype(np.uint16)
-                    counts_to_add = np.bincount(indices_bottom.ravel(), minlength=num_emb)
+                    indices = vq_vae.encode(d)
+                    indices = indices.cpu().detach().numpy().astype(np.uint16).ravel()
+                    counts_to_add = np.bincount(indices, minlength=num_emb)
                     counts = np.add(counts, counts_to_add)
                 else:
                     indices = vq_vae.encode(d)
-                    indices = indices.cpu().detach().numpy().astype(np.uint16)
-                    counts_to_add = np.bincount(indices.ravel(), minlength=num_emb)
+                    indices = indices.cpu().detach().numpy().astype(np.uint16).ravel()
+                    counts_to_add = np.bincount(indices, minlength=num_emb)
                     counts = np.add(counts, counts_to_add)
 
-        plt.hist(counts, bins=np.arange(num_emb), density=True, label=disease_states[j])
+        plt.hist(indices, bins=np.arange(num_emb), density=True, label=disease_states[j])
 
         # Normalize counts
         histograms[j] = np.divide(counts, np.sum(counts))
@@ -382,6 +382,8 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         plt.show(block=False)
         plt.pause(2)
         plt.close()
+
+
 
 
 
