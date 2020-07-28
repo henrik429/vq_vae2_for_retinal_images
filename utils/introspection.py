@@ -80,7 +80,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         "The closer the value is to 1, the better the clustering preserves the original distances.\n ")
 
     # save best order of embedded vectors
-    best_order, best_c = None, 0
+    best_order, best_c, best_metric = None, 0, 'euclidean'
     for method in ['single', 'average', 'weighted', 'complete', 'median', 'ward']:
         # methods single, median, centroid and complete seems to be unsuitable
 
@@ -102,6 +102,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
                 if c > best_c:
                     best_order = hierarchy.leaves_list(Z)
+                    best_metric = metric
 
                 plt.figure(figsize=(10, 7))
                 plt.title(f"dendogram - embedded space - {method} - {metric}")
@@ -249,41 +250,50 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
     encodings = encodings.detach().numpy()
 
-    # U-Map Visualization
-    clusterable_embedding = UMAP(
-        n_neighbors=80,
-        min_dist=0.0,
-        n_components=2,
-        #random_state=42,
-    ).fit_transform(encodings)
+    for metric in tqdm(['euclidean', 'cosine', 'correlation']):
+        for n_neighbors in (2,10,20,50,100, 200):
+            for min_dist in (0.0, 0.1, 0.25, 0.5, 0.8):
+                try:
+                    # U-Map Visualization
+                    clusterable_embedding = UMAP(
+                        n_neighbors=n_neighbors,
+                        min_dist=min_dist,
+                        n_components=2,
+                        metric=metric
+                    ).fit_transform(encodings)
 
-    threshold = 3
-    z = np.abs(stats.zscore(clusterable_embedding))
-    pos_to_delete, = np.where(np.amax(z, axis=1) > threshold)
+                    threshold = 3
+                    z = np.abs(stats.zscore(clusterable_embedding))
+                    pos_to_delete, = np.where(np.amax(z, axis=1) > threshold)
 
-    print(f"\n{pos_to_delete.shape[0]} outliers:")
-    for i in pos_to_delete:
-        print(jpg_list[i])
+                    print(f"\n{pos_to_delete.shape[0]} outliers:")
+                    for i in pos_to_delete:
+                        print(jpg_list[i])
 
-    encodings = np.delete(encodings, pos_to_delete, axis=0)
-    targets = np.delete(targets, pos_to_delete, axis=0)
+                    encodings = np.delete(encodings, pos_to_delete, axis=0)
+                    targets = np.delete(targets, pos_to_delete, axis=0)
 
-    clusterable_embedding = UMAP(
-        n_neighbors=80,
-        min_dist=0.0,
-        n_components=2,
-        #random_state=42,
-    ).fit_transform(encodings)
+                    clusterable_embedding = UMAP(
+                        n_neighbors=n_neighbors,
+                        min_dist=min_dist,
+                        n_components=2,
+                        metric=metric
+                    ).fit_transform(encodings)
 
-    plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
-                c=colormap[targets],
-                s=0.5
-                )
-    plt.legend(handles=patches)
-    plt.title(f"UMAP-Visualization - latents", fontsize=13, fontweight='bold')
-    plt.savefig(f"{network_dir}/visualizations/umap_visualization_latents.png")
-    plt.show()
-    plt.close()
+                    plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
+                                c=colormap[targets],
+                                s=0.4
+                                )
+                    plt.legend(handles=patches)
+                    plt.title(f"UMAP-Visualization - {metric} - {min_dist} - {n_neighbors} - latents",
+                              fontsize=13,
+                              fontweight='bold')
+                    plt.savefig(f"{network_dir}/visualizations/umap_visualization_latents_{metric}_{min_dist}_{n_neighbors}.png")
+                    plt.show()
+                    plt.close()
+
+                except ZeroDivisionError:
+                    pass
 
     data = [[] for _ in range(levels)]
     print("Generate data for histograms...")
@@ -306,14 +316,14 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     print("Generate histograms...")
     for j, level_data in tqdm(enumerate(data)):
         level_data = torch.tensor(level_data)
-        divider = level_data.size(0) + size_latent_space   # for normalized histogram
+        divider = level_data.size(0) * size_latent_space   # for normalized histogram
         level_data = DataLoader(level_data, batch_size=batch_size)
 
         if mode == Mode.vq_vae_2:
             for i, d in enumerate(level_data):
                 d = d.permute(0, 3, 1, 2).float().to(device)
                 indices_bottom = vq_vae.encode(d)
-                indices_bottom = indices_bottom.to("cpu").detach().numpy().astype(np.uint8)
+                indices_bottom = indices_bottom.cpu().detach().numpy().astype(np.uint8)
 
                 for index in indices_bottom.ravel():
                     histograms[j][index] += 1/divider
@@ -322,8 +332,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                 for i, d in enumerate(level_data):
                     d = d.permute(0, 3, 1, 2).float().to(device)
                     indices = vq_vae.encode(d)
-
-                    indices = indices.to("cpu").detach().numpy().astype(np.int32)
+                    indices = indices.cpu().detach().numpy().astype(np.int32)
 
                     for index in indices.ravel():
                         histograms[j][index] += 1/divider
@@ -341,6 +350,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                   )
         plt.xlabel("index")
         plt.ylabel("ratio of embedded vector")
+        plt.ylim(0.0, 1.0)
         plt.savefig(f"{network_dir}/histograms/histogram_{disease_states[j]}.png")
         plt.show(block=False)
         plt.pause(2)
@@ -351,6 +361,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                   fontsize=13,
                   fontweight='bold'
                   )
+        plt.ylim(0.0, 1.0)
         plt.xlabel("index")
         plt.ylabel("ratio of embedded vector")
         plt.savefig(f"{network_dir}/histograms/histogram_{disease_states[j]}_diff.png")
@@ -362,7 +373,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     plt.figure(figsize=(12, 12))
     for i, hist in enumerate(histograms):
         plt.hist(hist, bins=num_emb, alpha=0.5, label=disease_states[i])
-
+    plt.ylim(0.0, 1.0)
     plt.title("multiple histograms of all disease states",
               fontsize=13,
               fontweight='bold')
