@@ -314,12 +314,12 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     """
     # Plot overlap of histograms
     plt.figure(figsize=(12, 12))
-    plt.title("Oerlap of Histograms of all Disease States",
+    plt.title("Overlap of Histograms of all Disease States",
               fontsize=13,
               fontweight='bold')
     plt.xlabel("Index")
     plt.ylabel("Ratio of Embedded Vector")
-    plt.legend(loc='upper right')
+    plt.legend(handles=patches, loc='upper right')
     plt.grid(alpha=0.4)
 
     histograms = np.zeros((levels, num_emb), dtype=np.float64)
