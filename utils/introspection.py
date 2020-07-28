@@ -250,9 +250,9 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
     encodings = encodings.detach().numpy()
 
-    for metric in tqdm(['euclidean', 'cosine', 'correlation']):
-        for n_neighbors in (2,10,20,50,100, 200):
-            for min_dist in (0.0, 0.1, 0.25, 0.5, 0.8):
+    for metric in tqdm([]): # ['euclidean', 'cosine', 'correlation']):
+        for n_neighbors in [2]:   # ,10,20,50,100, 200):
+            for min_dist in [0.0]:    #, 0.1, 0.25, 0.5, 0.8):
                 try:
                     # U-Map Visualization
                     clusterable_embedding = UMAP(
@@ -312,38 +312,34 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     """
     Split test data in specific levels and build histograms over these groups.
     """
-    histograms = np.zeros((levels, num_emb), dtype=np.float)
+    histograms = np.zeros((levels, num_emb), dtype=np.float64)
     print("Generate histograms...")
     for j, level_data in tqdm(enumerate(data)):
         level_data = torch.tensor(level_data)
-        divider = level_data.size(0) * size_latent_space   # for normalized histogram
+        bins = np.zeros(num_emb)
         level_data = DataLoader(level_data, batch_size=batch_size)
-
-        if mode == Mode.vq_vae_2:
+        with torch.no_grad():
             for i, d in enumerate(level_data):
                 d = d.permute(0, 3, 1, 2).float().to(device)
-                indices_bottom = vq_vae.encode(d)
-                indices_bottom = indices_bottom.cpu().detach().numpy().astype(np.uint8)
 
-                for index in indices_bottom.ravel():
-                    histograms[j][index] += 1/divider
-        else:
-            with torch.no_grad():
-                for i, d in enumerate(level_data):
-                    d = d.permute(0, 3, 1, 2).float().to(device)
+                if mode == Mode.vq_vae_2:
+                    indices_bottom = vq_vae.encode(d)
+                    indices_bottom = indices_bottom.cpu().detach().numpy().astype(np.uint16)
+                    bins_to_add = np.bincount(indices_bottom.ravel(), minlength=num_emb)
+                    bins = np.add(bins, bins_to_add)
+                else:
                     indices = vq_vae.encode(d)
-                    indices = indices.cpu().detach().numpy().astype(np.int32)
+                    indices = indices.cpu().detach().numpy().astype(np.uint16)
+                    bins_to_add = np.bincount(indices.ravel(), minlength=num_emb)
+                    bins = np.add(bins, bins_to_add)
 
-                    for index in indices.ravel():
-                        histograms[j][index] += 1/divider
-
-                # Sort indices of embedded vectors regarding best order
-                histograms[j] = histograms[j][best_order]
+        # Sort indices of embedded vectors regarding best order
+        histograms[j] = bins[best_order]
 
     hist_intersection = np.amin(histograms, axis=0)
 
     for j, hist in enumerate(histograms):
-        plt.hist(hist, bins=num_emb)
+        plt.hist(hist, bins=np.arange(num_emb), density=True)
         plt.title(f"percentaged frequencies - \'{disease_states[j]}\'",
                   fontsize=13,
                   fontweight='bold'
@@ -356,7 +352,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         plt.pause(2)
         plt.close()
 
-        plt.hist(np.subtract(hist, hist_intersection), bins=num_emb)
+        plt.hist(np.subtract(hist, hist_intersection), bins=np.arange(num_emb), density=True)
         plt.title(f"percentaged frequencies - \'{disease_states[j]}\' - difference",
                   fontsize=13,
                   fontweight='bold'
@@ -372,7 +368,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     # Plot overlap of histograms
     plt.figure(figsize=(12, 12))
     for i, hist in enumerate(histograms):
-        plt.hist(hist, bins=num_emb, alpha=0.5, label=disease_states[i])
+        plt.hist(hist, bins=np.arange(num_emb), density=True, alpha=0.5, label=disease_states[i])
     plt.ylim(0.0, 1.0)
     plt.title("multiple histograms of all disease states",
               fontsize=13,
