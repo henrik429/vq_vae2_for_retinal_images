@@ -333,12 +333,14 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                     bins_to_add = np.bincount(indices.ravel(), minlength=num_emb)
                     bins = np.add(bins, bins_to_add)
 
-        # Sort indices of embedded vectors regarding best order
-        histograms[j] = bins[best_order]
+        histograms[j] = bins
 
     hist_intersection = np.amin(histograms, axis=0)
 
     for j, hist in enumerate(histograms):
+        # Sort indices of embedded vectors regarding best order
+        hist = hist[best_order]
+
         plt.hist(hist, bins=np.arange(num_emb), density=True)
         plt.title(f"percentaged frequencies - \'{disease_states[j]}\'",
                   fontsize=13,
@@ -346,7 +348,8 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                   )
         plt.xlabel("index")
         plt.ylabel("ratio of embedded vector")
-        plt.ylim(0.0, 1.0)
+        plt.grid()
+        #plt.ylim(0.0, 1.0)
         plt.savefig(f"{network_dir}/histograms/histogram_{disease_states[j]}.png")
         plt.show(block=False)
         plt.pause(2)
@@ -357,7 +360,8 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                   fontsize=13,
                   fontweight='bold'
                   )
-        plt.ylim(0.0, 1.0)
+        plt.grid()
+        #plt.ylim(0.0, 1.0)
         plt.xlabel("index")
         plt.ylabel("ratio of embedded vector")
         plt.savefig(f"{network_dir}/histograms/histogram_{disease_states[j]}_diff.png")
@@ -369,11 +373,12 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     plt.figure(figsize=(12, 12))
     for i, hist in enumerate(histograms):
         plt.hist(hist, bins=np.arange(num_emb), density=True, alpha=0.5, label=disease_states[i])
-    plt.ylim(0.0, 1.0)
+    #plt.ylim(0.0, 1.0)
     plt.title("multiple histograms of all disease states",
               fontsize=13,
               fontweight='bold')
     plt.legend(loc='upper right')
+    plt.grid()
     plt.show()
     plt.savefig(f"{network_dir}/histograms/overlap_of_histogram.png")
     plt.close()
