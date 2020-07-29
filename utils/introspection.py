@@ -250,8 +250,8 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
     encodings = encodings.detach().numpy()
 
-    for metric in tqdm([]): # ['euclidean', 'cosine', 'correlation']):
-        for n_neighbors in [2]:   # ,10,20,50,100, 200):
+    for metric in tqdm(['euclidean']): # ['euclidean', 'cosine', 'correlation']):
+        for n_neighbors in [2, 100, 200]:   # ,10,20,50,100, 200):
             for min_dist in [0.0]:    #, 0.1, 0.25, 0.5, 0.8):
                 try:
                     # U-Map Visualization
@@ -285,7 +285,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                                 s=0.4
                                 )
                     plt.legend(handles=patches)
-                    plt.title(f"UMAP-Visualization - {metric} - {min_dist} - {n_neighbors} - latents",
+                    plt.title(f"UMAP-Visualization - latents - {metric} - {min_dist} - {n_neighbors}",
                               fontsize=13,
                               fontweight='bold')
                     plt.savefig(f"{network_dir}/visualizations/umap_visualization_latents_{metric}_{min_dist}_{n_neighbors}.png")
