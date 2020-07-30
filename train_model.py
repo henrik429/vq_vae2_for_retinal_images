@@ -71,3 +71,4 @@ if __name__ == "__main__":
     print('\nTraining with %i epochs done! Time elapsed: %.2f hours' % (FLAGS.maxepochs, (time.time() - time_start)/360))
 
     os.system(f"cp utils/models.py {network_dir}/models.py ")
+    os.system(f"cp utils/config.json {network_dir}/config.json ")

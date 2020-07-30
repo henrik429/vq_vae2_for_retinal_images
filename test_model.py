@@ -43,8 +43,8 @@ if __name__ == "__main__":
     else:
         num_emb = {"bottom": FLAGS.num_emb_bottom, "top": FLAGS.num_emb_top}
         emb_dim = {"bottom": FLAGS.emb_dim_bottom, "top": FLAGS.emb_dim_top}
-        #size_latent_space = {"bottom": FLAGS.size_latent_space_bottom ** 2, "top": FLAGS.size_latent_space_top ** 2}
-        size_latent_space = FLAGS.size_latent_space_bottom ** 2
+        size_latent_space = {"bottom": FLAGS.size_latent_space_bottom ** 2, "top": FLAGS.size_latent_space_top ** 2}
+        #size_latent_space = FLAGS.size_latent_space_bottom ** 2
 
         vq_vae = VQ_VAE_2 (
                         training=True,
@@ -69,6 +69,7 @@ if __name__ == "__main__":
                            mode=mode,
                            batch_size=FLAGS.batch_size,
                            device=device,
+                           emb_dim=emb_dim,
                            num_emb=num_emb,
                            vq_vae=vq_vae,
                            network_dir=network_dir,
