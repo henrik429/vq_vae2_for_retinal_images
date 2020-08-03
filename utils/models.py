@@ -437,11 +437,11 @@ class VQ_VAE_Training:
             self.writer.add_scalar("commitment loss", self.vq_vae.commmitment_loss, self.step_id)
         self.writer.add_scalar("total loss", self.vq_vae.total_loss, self.step_id)
 
-        if self.step_id % 80 == 0 and data.size(0) > 50:
+        if self.step_id % 400 == 0 and data.size(0) > 50:
             self.writer.add_images("target", data[0:8], self.step_id)
             self.writer.add_images("reconstruction", reconstruction[0:8], self.step_id)
 
-        if self.epoch_id > 8 and self.step_id % 200 == 0:
+        if self.epoch_id > 8 and self.step_id % 400 == 0:
             grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=10)
             save_image(grid, f"{self.network_dir}/results/result-{self.epoch_id}-{self.step_id}.png", normalize=True)
 
@@ -458,11 +458,11 @@ class VQ_VAE_Training:
                 reconstruction = self.vq_vae(data)
                 self.writer.add_scalar("valid loss", self.vq_vae.total_loss, self.step_id)
 
-                if self.step_id % 200 == 0 and data.size(0) > 50:
+                if self.step_id % 400 == 0 and data.size(0) > 50:
                     self.writer.add_images("valid_target", data[0:16], self.step_id)
                     self.writer.add_images("valid_reconstruction", reconstruction[0:16], self.step_id)
 
-                if self.epoch_id > 15 and self.step_id % 200 == 0:
+                if self.epoch_id > 8 and self.step_id % 400 == 0:
                     grid = make_grid(torch.cat((data[0:50:5], reconstruction[0:50:5]), dim=0), nrow=10)
                     save_image(grid, f"{self.network_dir}/valid_results/valid_result-{self.epoch_id}-{self.step_id}.png",
                                normalize=True)
