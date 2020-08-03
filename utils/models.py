@@ -6,7 +6,7 @@ from tqdm import tqdm
 from torchvision.utils import make_grid, save_image
 from enum import IntEnum
 import os
-
+import numpy as np
 # from utils.functions import vector_quantization
 
 
@@ -30,97 +30,56 @@ class Residual_Block(nn.Module):
         return F.relu(input + self.res(input))
 
 
-class QuarterEncoder(nn.Module):
+class AbstractEncoder(nn.Module):
     """
-    An encoder that cuts the input size down by a factor of 4.
+    An encoder that cuts the input size down by a factor x.
     """
-    def __init__(self, in_channels=256, hidden_channels=256, padding=1):
+    def __init__(self, in_channels=256, hidden_channels=256, reduction_factor=4, num_res_blocks=1):
         super().__init__()
 
-        # Formula of new "Image" Size: (origanal_size - kernel_size + 2 * amount_of_padding)//stride + 1
-        self.cnn = nn.Sequential(
-            nn.Conv2d(in_channels=in_channels, out_channels=hidden_channels, kernel_size=4, padding=padding, stride=2),
-            nn.ReLU(),
-            nn.BatchNorm2d(hidden_channels),
-            nn.Conv2d(hidden_channels, hidden_channels, kernel_size=4, padding=padding, stride=2),
-            nn.ReLU(),
-            nn.BatchNorm2d(hidden_channels),
-        )
+        def conv_block(in_channels, out_channels, kernel_size=4, stride=2, padding=1):
+            return [nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
+                              padding=padding, stride=stride),
+                    nn.ReLU(),
+                    nn.BatchNorm2d(out_channels)]
 
-        self.residual = Residual_Block(channels=hidden_channels)
-        self.residual2 = Residual_Block(channels=hidden_channels)
+        layers = []
+        for r in range(int(np.log(reduction_factor)/np.log(2))):
+            if r == 0:
+                layers.extend(conv_block(in_channels=in_channels, out_channels=hidden_channels))
+            else:
+                layers.extend(conv_block(in_channels=hidden_channels, out_channels=hidden_channels))
+            for n in range(num_res_blocks):
+                layers.append(Residual_Block(hidden_channels))
+        self.cnn = nn.Sequential(*layers)
 
     def forward(self, x):
-        return self.residual2(self.residual(self.cnn(x)))
+        return self.cnn(x)
 
 
-class HalfEncoder(nn.Module):
+class AbstractDecoder(nn.Module):
     """
-    An encoder that cuts the input size down by a factor of 2.
+    An decoder that up-samples the input size down by a factor x.
     """
-    def __init__(self, in_channels=256, hidden_channels=256, padding=1):
+    def __init__(self, hidden_channels=256, upscale_factor=4, num_res_blocks=1):
         super().__init__()
 
-        # Formula of new "Image" Size: (origanal_size - kernel_size + 2 * amount_of_padding)//stride + 1
-        self.cnn = nn.Sequential(
-            nn.Conv2d(in_channels, hidden_channels, kernel_size=4, padding=padding, stride=2),
-            nn.ReLU(),
-            nn.BatchNorm2d(hidden_channels)
-        )
+        def conv_block(hidden_channels, kernel_size=4, stride=2, padding=1):
+            return [nn.ConvTranspose2d(in_channels=hidden_channels, out_channels=hidden_channels, kernel_size=kernel_size,
+                              padding=padding, stride=stride),
+                    nn.ReLU(),
+                    nn.BatchNorm2d(hidden_channels)]
 
-        self.residual = Residual_Block(channels=hidden_channels)
-        self.residual2 = Residual_Block(channels=hidden_channels)
+        layers = []
+        for r in range(int(np.log(upscale_factor)/np.log(2))):
+            for n in range(num_res_blocks):
+                layers.append(Residual_Block(hidden_channels))
+            layers.extend(conv_block(hidden_channels=hidden_channels))
 
-    def forward(self, x):
-        return self.residual2(self.residual(self.cnn(x)))
-
-
-class QuarterDecoder(nn.Module):
-    """
-    An encoder that up-samples the input size by a factor of 4.
-    """
-    def __init__(self, hidden_channels=256, out_channels=256, padding=1, sigmoid=True):
-        super().__init__()
-
-        self.residual = Residual_Block(channels=hidden_channels)
-        self.residual2 = Residual_Block(channels=hidden_channels)
-
-        self.cnn = nn.Sequential(
-            nn.ConvTranspose2d(hidden_channels, hidden_channels, kernel_size=4, padding=padding, stride=2),
-            nn.ReLU(),
-            nn.BatchNorm2d(hidden_channels),
-            nn.ConvTranspose2d(hidden_channels, out_channels=hidden_channels, kernel_size=4, padding=padding, stride=2),
-            nn.ReLU(),
-            nn.BatchNorm2d(hidden_channels),
-            nn.Conv2d(hidden_channels, out_channels, kernel_size=1),
-        )
-        if sigmoid:
-            self.activation = nn.Sigmoid()
-        else:
-            self.activation = nn.ReLU()
+        self.cnn = nn.Sequential(*layers)
 
     def forward(self, x):
-        return self.activation(self.cnn(self.residual2(self.residual(x))))
-
-
-class HalfDecoder(nn.Module):
-    """
-    An encoder that up-samples the input size by a factor of 4.
-    """
-    def __init__(self, hidden_channels=256, out_channels=256, padding=1):
-        super().__init__()
-
-        self.residual = Residual_Block(channels=hidden_channels)
-        self.residual2 = Residual_Block(channels=hidden_channels)
-
-        self.cnn = nn.Sequential(
-            nn.ConvTranspose2d(hidden_channels, out_channels, kernel_size=4, padding=padding, stride=2),
-            nn.ReLU(),
-            nn.BatchNorm2d(out_channels)
-        )
-
-    def forward(self, x):
-        return self.cnn(self.residual2(self.residual(x)))
+        return self.cnn(x)
 
 
 class Vector_Quantization(nn.Module):
@@ -142,7 +101,6 @@ class Vector_Quantization(nn.Module):
         self.emb_dim = emb_dim
         self.num_emb = num_emb
         self.embedding = nn.Parameter(torch.Tensor(self.num_emb, self.emb_dim))
-        # self.embedding.data.normal_()
         self.embedding.data.uniform_(-1/self.num_emb, 1/self.num_emb)
 
         self.register_buffer("embed", self.embedding)
@@ -210,10 +168,8 @@ class VQ_VAE(nn.Module):
                  training=False, ema=False, commitment_cost=0.25, gamma=0.99, epsilon=1e-5):
         super().__init__()
 
-        self.enc1 = QuarterEncoder(hidden_channels=hidden_channels)
-        self.enc2 = HalfEncoder(hidden_channels=hidden_channels)
-        self.dec1 = QuarterDecoder(hidden_channels=hidden_channels)
-        self.dec2 = HalfDecoder(hidden_channels=hidden_channels)
+        self.encoder = AbstractEncoder(in_channels=3, hidden_channels=hidden_channels, reduction_factor=8)
+        self.decoder = AbstractDecoder(hidden_channels=hidden_channels, upscale_factor=8)
 
         self.vector_quantization = Vector_Quantization(emb_dim,
                                                        num_emb,
@@ -226,6 +182,8 @@ class VQ_VAE(nn.Module):
 
         self.conv_to_emb_dim = nn.Conv2d(hidden_channels, emb_dim, kernel_size=1)
         self.conv_from_emb_dim = nn.Conv2d(emb_dim, hidden_channels, kernel_size=1)
+
+        self.last_layer = nn.Conv2d(hidden_channels, 3, kernel_size=1)
 
         self.training = training
         if self.training:
@@ -243,24 +201,20 @@ class VQ_VAE(nn.Module):
         :param x: Input Image
         :return z: Latent Space
         """
-        z_e = self.enc1(x)
-        z_e = self.enc2(z_e)
+        z_e = self.encoder(x)
 
         z_e = self.conv_to_emb_dim(z_e)
 
-        _, _, indices, _ = self.vector_quantization(z_e)
-        return indices
+        _, z_q, indices, _ = self.vector_quantization(z_e)
+        return z_q, indices
 
     def forward(self, x):
-        z_e = self.enc1(x)
-        z_e = self.enc2(z_e)
+        z_e = self.encoder(x)
         z_e = self.conv_to_emb_dim(z_e)
 
         z_e, z_q, indices, z_one_hot = self.vector_quantization(z_e)
         z_q_conv = self.conv_from_emb_dim(z_q.permute(0, 3, 1, 2).contiguous().float())
-
-        z_q_conv= self.dec2(z_q_conv)
-        reconstruction = self.dec1(z_q_conv)
+        reconstruction = torch.sigmoid(self.last_layer(self.decoder(z_q_conv)))
 
         if self.training:
             # Calculate Losses
@@ -289,13 +243,11 @@ class VQ_VAE_2(nn.Module):
                  epsilon=1e-5):
         super().__init__()
 
-        self.quarter_encoder = QuarterEncoder(in_channels=3, hidden_channels=hidden_channels)
-        self.bottom_encoder = HalfEncoder(in_channels=hidden_channels, hidden_channels=hidden_channels)
-        self.top_encoder = QuarterEncoder(in_channels=hidden_channels, hidden_channels=hidden_channels)
+        self.bottom_encoder = AbstractEncoder(in_channels=3, hidden_channels=hidden_channels, reduction_factor=8)
+        self.top_encoder = AbstractEncoder(in_channels=hidden_channels, hidden_channels=hidden_channels, reduction_factor=32)
 
-        self.top_decoder = QuarterDecoder(hidden_channels=hidden_channels, out_channels=hidden_channels, sigmoid=False)
-        self.bottom_decoder = HalfDecoder(hidden_channels=hidden_channels, out_channels=hidden_channels)
-        self.quarter_decoder = QuarterDecoder(hidden_channels=hidden_channels, out_channels=3)
+        self.top_decoder = AbstractDecoder(hidden_channels=hidden_channels, upscale_factor=32)
+        self.bottom_decoder = AbstractDecoder(hidden_channels=hidden_channels, upscale_factor=8)
 
         self.conv_to_emb_dim_top = nn.Conv2d(hidden_channels, emb_dim["top"], kernel_size=1)
         self.conv_to_emb_dim_bottom = nn.Conv2d(hidden_channels, emb_dim["bottom"], kernel_size=1)
@@ -304,6 +256,7 @@ class VQ_VAE_2(nn.Module):
         self.conv_from_emb_dim_bottom = nn.Conv2d(emb_dim["bottom"], hidden_channels, kernel_size=1)
 
         self.conv_concatenation = nn.Conv2d(hidden_channels*2, hidden_channels, kernel_size=1)
+        self.last_layer = nn.Conv2d(hidden_channels, 3, kernel_size=1)
 
         # Initialize for both levels an Embedding Space
         self.num_emb = num_emb
@@ -336,19 +289,22 @@ class VQ_VAE_2(nn.Module):
         """
         Function only used to generate latent space for visualization.
         :param x: Input Image
-        :return z: Bottom Latent Space
+        :return z: Latent Space
         """
-        x = self.quarter_encoder(x)
         z_e_bottom = self.bottom_encoder(x)
 
-        z_e_bottom = self.conv_to_emb_dim_bottom(z_e_bottom)
-        _, _, indices_bottom, _ = self.vector_quantization_bottom(z_e_bottom)
+        z_e_top = self.top_encoder(z_e_bottom)
+        z_e_top = self.conv_to_emb_dim_top(z_e_top)
 
-        return indices_bottom
+        _, z_q_top, indices_top, _ = self.vector_quantization_top(z_e_top)
+
+        z_e_bottom = self.conv_to_emb_dim_bottom(z_e_bottom)
+        _, z_q_bottom, indices_bottom, _ = self.vector_quantization_bottom(z_e_bottom)
+
+        return z_q_bottom, z_q_top, indices_bottom, indices_top
 
     def forward(self, x):
-        z_e_bottom = self.quarter_encoder(x)
-        z_e_bottom = self.bottom_encoder(z_e_bottom)
+        z_e_bottom = self.bottom_encoder(x)
 
         z_e_top = self.top_encoder(z_e_bottom)
         z_e_top = self.conv_to_emb_dim_top(z_e_top)
@@ -366,7 +322,7 @@ class VQ_VAE_2(nn.Module):
 
         z_q_bottom_conv = torch.cat((z_e_top_upsampled, z_q_bottom_conv), dim=1)
         z_q_bottom_conv = self.conv_concatenation(z_q_bottom_conv)
-        reconstruction = self.quarter_decoder(self.bottom_decoder(z_q_bottom_conv))
+        reconstruction = torch.sigmoid(self.last_layer(self.bottom_decoder(z_q_bottom_conv)))
 
         if self.training:
             # Calculate Losses
@@ -553,11 +509,9 @@ class VQ_VAE_Training:
 
 if __name__ == '__main__':
     vq_vae = VQ_VAE_2(hidden_channels=10,
-                      emb_dim={"top":20, "bottom": 50},
-                      num_emb={"top":100, "bottom": 150})
+                    emb_dim={"top":20, "bottom": 50},
+                    num_emb={"top":100, "bottom": 150})
 
-    #for param in vq_vae.parameters():
-    #    print(param)
     a = torch.randn((4, 3, 256, 256))
     reconstruction = vq_vae(a)
     print(reconstruction.shape)
