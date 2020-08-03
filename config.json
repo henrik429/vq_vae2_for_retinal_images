@@ -37,7 +37,7 @@
   },
   "-size_latent_space_top": {
     "short": "-size_top",
-    "value": 4,
+    "value": 1,
     "help": "Must be powered by 2. ",
     "type": "int"
   },
@@ -85,7 +85,7 @@
   },
   "-maxepochs": {
     "short": "-me",
-    "value": 40,
+    "value": 50,
     "help": "Maximum nr of epochs to train the model",
     "type": "int"
   },
