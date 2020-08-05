@@ -73,7 +73,7 @@
   },
     "-device": {
     "short": "-dv",
-    "value": "cuda:3",
+    "value": "cuda:4",
     "help": "Device to work on",
     "type": "str"
   },

@@ -18,7 +18,8 @@ import os
 
 rule all:
     input:
-        expand("{port}/vis.done", port = config['PORT'])
+        expand("{port}/vis.done", port = config['PORT']),
+        expand("{port}/fid.done", port = config['PORT'])
     run:
         path = os.path.abspath(str(path_prefix) + "/models/" + str(networkname))
         os.system(f"rm {port}/vis.done")
@@ -43,20 +44,21 @@ rule visualization:
 
 rule calculate_fid:
     input:
-         train_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
-                 n_augmentation = config['N_AUGMENTATION'],
-                 maxdegree = config['MAX_ROTATION_ANGLE'],
-                 resize1 = config['RESIZE'][0],
-                 resize2 = config['RESIZE'][1],
-                 flip = config['FLIP']),
-         valid_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
+        expand("{port}/training.done", port = config['PORT']),
+        train_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
              n_augmentation = config['N_AUGMENTATION'],
              maxdegree = config['MAX_ROTATION_ANGLE'],
              resize1 = config['RESIZE'][0],
              resize2 = config['RESIZE'][1],
-             flip = config['FLIP'])
+             flip = config['FLIP']),
+        valid_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/valid/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
+         n_augmentation = config['N_AUGMENTATION'],
+         maxdegree = config['MAX_ROTATION_ANGLE'],
+         resize1 = config['RESIZE'][0],
+         resize2 = config['RESIZE'][1],
+         flip = config['FLIP'])
     output:
-        temp("fid")
+        touch(expand("{port}/fid.done", port = config['PORT']))
     run:
         shell("python fid.py -i {input.train_data} -v {input.valid_data} -pp {path_prefix} -nn {networkname} ")
 

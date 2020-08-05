@@ -266,7 +266,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     for i in range(levels):
         patches.append(mpatches.Patch(color=colormap[i], label=f'{disease_states[i]}'))
 
-    for metric in tqdm(['euclidean', 'cosine', 'correlation']):  # ['euclidean']):
+    for metric in tqdm(['euclidean']): # 'cosine', 'correlation']):  'euclidean'
         for n_neighbors in [2,100,200]:   # ,10,20,50,100, 200):
             for min_dist in [0.0]:    #, 0.1, 0.25, 0.5, 0.8):
                 if mode == Mode.vq_vae_2:
@@ -454,7 +454,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
                 # Normalize counts
                 histograms[stage][j] = np.divide(counts, np.sum(counts))
-                plt.bar(np.arange(num_emb[stage], histograms[stage][j], color=colormap[j]))
+                plt.bar(np.arange(num_emb[stage]), histograms[stage][j], color=colormap[j])
 
             plt.savefig(f"{network_dir}/histograms/overlap_of_histograms_{stage}.png")
             plt.close()
@@ -489,7 +489,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                 plt.close()
 
                 if j != 0:
-                    plt.bar(np.arange(num_emb[stage]), np.subtract(hist, histograms[0]))
+                    plt.bar(np.arange(num_emb[stage]), np.subtract(hist, histograms[stage][0]))
                     plt.title(f"Percentaged Frequencies - Difference to No DR group - \'{disease_states[j]}\' -  {stage}",
                               fontsize=13,
                               fontweight='bold'
