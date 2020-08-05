@@ -22,13 +22,13 @@ rule all:
         expand("{port}/fid.done", port = config['PORT'])
     run:
         path = os.path.abspath(str(path_prefix) + "/models/" + str(networkname))
-        os.system(f"rm {port}/vis.done")
+        # os.system(f"rm {port}/vis.done")
         shell("tensorboard --logdir %s --port {port}" % path)
 
 
 rule visualization:
     input:
-        expand("{port}/training.done", port = config['PORT']),
+        expand("{port}/fid.done", port = config['PORT']),
         test_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
              n_augmentation = config['N_AUGMENTATION'],
              maxdegree = config['MAX_ROTATION_ANGLE'],

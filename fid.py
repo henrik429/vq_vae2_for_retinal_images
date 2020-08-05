@@ -15,7 +15,6 @@ from tqdm import tqdm
 
 from utils.utils import setup
 from utils.models import Mode, VQ_VAE_2, VQ_VAE
-from utils.dataloader import Dataloader
 from torchvision.utils import make_grid, save_image
 
 import warnings
@@ -23,7 +22,7 @@ import warnings
 
 class PartialInceptionNetwork(nn.Module):
 
-    def __init__(self, transform_input=True, device="cpu"):
+    def __init__(self, transform_input=True):
         super().__init__()
         self.inception_network = inception_v3(pretrained=True)
         self.inception_network.Mixed_7c.register_forward_hook(self.output_hook)
@@ -227,7 +226,7 @@ def calculate_fid(images1, images2, use_multiprocessing, batch_size, device="cpu
     return fid
 
 
-def load_images(path):
+def load_images(path, num_images):
     """ Loads all .png or .jpg images from a given path
     Warnings: Expects all images to be of same dtype and shape.
     Args:
@@ -239,7 +238,7 @@ def load_images(path):
     image_extensions = ["png", "jpg", "jpeg"]
     for ext in image_extensions:
         print("Looking for images in", os.path.join(path, "*.{}".format(ext)))
-        for impath in glob.glob(os.path.join(path, "*.{}".format(ext))):
+        for impath in glob.glob(os.path.join(path, "*.{}".format(ext)))[:num_images]:
             image_paths.append(impath)
     first_image = io.imread(image_paths[0])
     W, H = first_image.shape[:2]
@@ -267,7 +266,9 @@ if __name__ == "__main__":
     os.makedirs(f"{network_dir}/generated_valid_images", exist_ok=True)
     use_multiprocessing = False
     batch_size = 64
-    n_batches = 
+    num_images = 12800
+    n_batches = num_images // batch_size
+
     if mode == Mode.vq_vae:
         num_emb = FLAGS.num_emb
         emb_dim = FLAGS.emb_dim
@@ -307,28 +308,29 @@ if __name__ == "__main__":
     file = open(f"{network_dir}/fid_{FLAGS.network_name}.txt", 'w')
 
     for path in [input_path, valid_path]:
-        real_images = load_images(path)
+        assert len(os.listdir(path)) >= num_images
+        real_images = load_images(path, num_images)
         generated_images = np.zeros_like(real_images)
         with torch.no_grad():
-            data = torch.tensor((real_images)).permute(0,2,3,1)
-            for batch_idx in range(n_batches):
+            data = torch.tensor((real_images)).permute(0,3,1,2).float()
+            for batch_idx in tqdm(range(n_batches)):
                 start_idx = batch_size * batch_idx
                 end_idx = batch_size * (batch_idx + 1)
 
-                reconstructions = vq_vae(data[start_idx:end_idx].to(device))
-                generated_images[i:i+d.size(0)] = reconstructions.cpu().detach().permute(0,2,3,1).numpy()
-                if path == input_path and d.size(0) > 50:
-                    grid = make_grid(torch.cat((d[0:50:5], reconstructions[0:50:5]), dim=0), nrow=10)
+                reconstructions = vq_vae(data[start_idx:end_idx].to(device)).cpu().detach()
+                generated_images[start_idx:end_idx] = reconstructions.permute(0,2,3,1).numpy()
+                if path == input_path and reconstructions.size(0) > 50:
+                    grid = make_grid(torch.cat((data[start_idx:end_idx][0:50:5], reconstructions[0:50:5]), dim=0), nrow=10)
                     save_image(grid,
-                               f"{network_dir}/generated_train_images/gen_train_imgs_{i}.png",
+                               f"{network_dir}/generated_train_images/gen_train_imgs_{batch_idx}.png",
                                normalize=True)
-                elif path == valid_path and d.size(0) > 50:
-                    grid = make_grid(torch.cat((d[0:50:5], reconstructions[0:50:5]), dim=0), nrow=10)
+                elif path == valid_path and reconstructions.size(0) > 50:
+                    grid = make_grid(torch.cat((data[start_idx:end_idx][0:50:5], reconstructions[0:50:5]), dim=0), nrow=10)
                     save_image(grid,
-                               f"{network_dir}/generated_valid_images/gen_valid_imgs_{i}.png",
+                               f"{network_dir}/generated_valid_images/gen_valid_imgs_{batch_idx}.png",
                                normalize=True)
 
-        fid_value = calculate_fid(real_images, generated_images, use_multiprocessing, FLAGS.batch_size, device)
+        fid_value = calculate_fid(real_images, generated_images, use_multiprocessing, batch_size, device)
 
         if path==input_path:
             print(f"\nThe FID Score of the train data is: {fid_value}\n")
