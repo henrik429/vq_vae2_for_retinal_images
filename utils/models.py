@@ -206,7 +206,7 @@ class VQ_VAE(nn.Module):
         z_e = self.conv_to_emb_dim(z_e)
 
         _, z_q, indices, _ = self.vector_quantization(z_e)
-        return z_q, indices
+        return z_e, indices
 
     def forward(self, x):
         z_e = self.encoder(x)
@@ -244,9 +244,9 @@ class VQ_VAE_2(nn.Module):
         super().__init__()
 
         self.bottom_encoder = AbstractEncoder(in_channels=3, hidden_channels=hidden_channels, reduction_factor=8)
-        self.top_encoder = AbstractEncoder(in_channels=hidden_channels, hidden_channels=hidden_channels, reduction_factor=32)
+        self.top_encoder = AbstractEncoder(in_channels=hidden_channels, hidden_channels=hidden_channels, reduction_factor=4)
 
-        self.top_decoder = AbstractDecoder(hidden_channels=hidden_channels, upscale_factor=32)
+        self.top_decoder = AbstractDecoder(hidden_channels=hidden_channels, upscale_factor=4)
         self.bottom_decoder = AbstractDecoder(hidden_channels=hidden_channels, upscale_factor=8)
 
         self.conv_to_emb_dim_top = nn.Conv2d(hidden_channels, emb_dim["top"], kernel_size=1)
@@ -301,7 +301,7 @@ class VQ_VAE_2(nn.Module):
         z_e_bottom = self.conv_to_emb_dim_bottom(z_e_bottom)
         _, z_q_bottom, indices_bottom, _ = self.vector_quantization_bottom(z_e_bottom)
 
-        return z_q_bottom, z_q_top, indices_bottom, indices_top
+        return z_e_bottom, z_e_top, indices_bottom, indices_top
 
     def forward(self, x):
         z_e_bottom = self.bottom_encoder(x)
@@ -505,7 +505,7 @@ class VQ_VAE_Training:
             self.writer.add_embedding(self.vq_vae.vector_quantization_bottom.embedding,
                                       metadata = list(range(0, self.num_emb["bottom"])),
                                       global_step=self.step_id)
-
+            print(self.vq_vae.vector_quantization_bottom.embedding)
 
 if __name__ == '__main__':
     vq_vae = VQ_VAE_2(hidden_channels=10,

@@ -234,26 +234,24 @@ def load_images(path, num_images):
     Returns:
         final_images: np.array of image dtype and shape.
     """
-    image_paths = []
-    image_extensions = ["png", "jpg", "jpeg"]
-    for ext in image_extensions:
-        print("Looking for images in", os.path.join(path, "*.{}".format(ext)))
-        for impath in glob.glob(os.path.join(path, "*.{}".format(ext)))[:num_images]:
-            image_paths.append(impath)
-    first_image = io.imread(image_paths[0])
+    image_list = os.listdir(path)
+    try:
+        image_list.remove(".snakemake_timestamp")
+    except ValueError:
+        pass
+
+    image_list = image_list[:num_images]
+    first_image = io.imread(path+image_list[0])
     W, H = first_image.shape[:2]
-    image_paths.sort()
-    image_paths = image_paths
-    final_images = np.zeros((len(image_paths), H, W, 3), dtype=first_image.dtype)
-    for idx, impath in enumerate(image_paths):
-        im = io.imread(impath)
+    final_images = np.zeros((len(image_list), H, W, 3), dtype=first_image.dtype)
+    for idx, jpeg in enumerate(image_list):
+        im = io.imread(path+jpeg)
         assert im.dtype == final_images.dtype
         final_images[idx] = im
     return final_images
 
 
 if __name__ == "__main__":
-
     FLAGS, logger = setup(running_script="./utils/models.py", config="./config.json")
     input_path = FLAGS.input
     valid_path = FLAGS.valid
@@ -275,35 +273,32 @@ if __name__ == "__main__":
         size_latent_space = FLAGS.size_latent_space ** 2
 
         vq_vae = VQ_VAE(
-            training=True,
             hidden_channels=FLAGS.hidden_channels,
             num_emb=num_emb,
             emb_dim=emb_dim,
-            ema=FLAGS.exponential_moving_averages,
-            commitment_cost=0.25,
-            gamma=0.99,
-            epsilon=1e-5
         )
 
-        vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
-        vq_vae.to(device=device)
     else:
         num_emb = {"bottom": FLAGS.num_emb_bottom, "top": FLAGS.num_emb_top}
         emb_dim = {"bottom": FLAGS.emb_dim_bottom, "top": FLAGS.emb_dim_top}
         size_latent_space = {"bottom": FLAGS.size_latent_space_bottom ** 2, "top": FLAGS.size_latent_space_top ** 2}
 
         vq_vae = VQ_VAE_2(
-            training=True,
             hidden_channels=FLAGS.hidden_channels,
             num_emb=num_emb,
             emb_dim=emb_dim,
-            ema=FLAGS.exponential_moving_averages,
-            commitment_cost=0.25,
-            gamma=0.99,
-            epsilon=1e-5
         ).to(device=device)
-        vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
-        vq_vae.to(device=device)
+
+    vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
+    vq_vae.to(device=device)
+    vq_vae.eval()
+
+    if mode == Mode.vq_vae_2:
+        print(vq_vae.vector_quantization_bottom.embedding)
+
+    #print("Model's state_dict:")
+    #for param_tensor in vq_vae.state_dict():
+    #    print(param_tensor, "\t", vq_vae.state_dict()[param_tensor].size())
 
     file = open(f"{network_dir}/fid_{FLAGS.network_name}.txt", 'w')
 

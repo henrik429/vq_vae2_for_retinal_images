@@ -24,35 +24,24 @@ if __name__ == "__main__":
         size_latent_space = FLAGS.size_latent_space ** 2
 
         vq_vae = VQ_VAE (
-                        training=True,
                         hidden_channels=FLAGS.hidden_channels,
                         num_emb=num_emb,
                         emb_dim=emb_dim,
-                        ema=FLAGS.exponential_moving_averages,
-                        commitment_cost=0.25,
-                        gamma=0.99,
-                        epsilon=1e-5
                         )
-
-        vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
-        vq_vae.to(device=device)
     else:
         num_emb = {"bottom": FLAGS.num_emb_bottom, "top": FLAGS.num_emb_top}
         emb_dim = {"bottom": FLAGS.emb_dim_bottom, "top": FLAGS.emb_dim_top}
         size_latent_space = {"bottom": FLAGS.size_latent_space_bottom ** 2, "top": FLAGS.size_latent_space_top ** 2}
 
         vq_vae = VQ_VAE_2 (
-                        training=True,
                         hidden_channels=FLAGS.hidden_channels,
                         num_emb=num_emb,
                         emb_dim=emb_dim,
-                        ema=FLAGS.exponential_moving_averages,
-                        commitment_cost=0.25,
-                        gamma=0.99,
-                        epsilon=1e-5
-                        ).to(device=device)
-        vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
-        vq_vae.to(device=device)
+                        )
+
+    vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
+    vq_vae.to(device=device)
+    vq_vae.eval()
 
     # Visualization of the latent space
     test_path = FLAGS.test

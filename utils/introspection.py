@@ -248,13 +248,13 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         for i, (data,) in tqdm(enumerate(test_data)):
             data = data.to(device)
             if mode == Mode.vq_vae_2:
-                z_q_bottom, z_q_top, indices_bottom, indices_top = vq_vae.encode((data))
-                encodings_bottom[i:i + data.size(0)] = z_q_bottom.reshape(data.size(0), size_latent_space["bottom"] * emb_dim_bottom)
-                encodings_top[i:i + data.size(0)] = z_q_top.reshape(data.size(0), size_latent_space["top"] * emb_dim_top)
+                z_e_bottom, z_e_top, indices_bottom, indices_top = vq_vae.encode((data))
+                encodings_bottom[i:i + data.size(0)] = z_e_bottom.reshape(data.size(0), size_latent_space["bottom"] * emb_dim_bottom)
+                encodings_top[i:i + data.size(0)] = z_e_top.reshape(data.size(0), size_latent_space["top"] * emb_dim_top)
 
             else:
-                z_q, indices = vq_vae.encode((data))
-                encodings[i:i + data.size(0)] = z_q.reshape(data.size(0), size_latent_space * emb_dim)
+                z_e, indices = vq_vae.encode((data))
+                encodings[i:i + data.size(0)] = z_e.reshape(data.size(0), size_latent_space * emb_dim)
 
     if mode == Mode.vq_vae_2:
         encodings_bottom = encodings_bottom.detach().numpy()

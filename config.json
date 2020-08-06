@@ -37,7 +37,7 @@
   },
   "-size_latent_space_top": {
     "short": "-size_top",
-    "value": 1,
+    "value": 8,
     "help": "Must be powered by 2. ",
     "type": "int"
   },
@@ -115,13 +115,13 @@
   },
   "-num_emb_top": {
     "short": "-K_top",
-    "value": 10,
+    "value": 30,
     "help": "Number of embedded vectors ",
     "type": "int"
   },
   "-num_emb_bottom": {
     "short": "-K_bottom",
-    "value": 512,
+    "value": 256,
     "help": "Number of embedded vectors",
     "type": "int"
   },
@@ -133,14 +133,14 @@
   },
   "-emb_dim_bottom": {
     "short": "-D_bottom",
-    "value": 8,
+    "value": 4,
     "help": "Size of each embedded vector",
     "type": "int"
   },
     "-exponential_moving_averages": {
     "short": "-ema",
     "value": 1,
-    "help": "Using exponential moving averages",
+    "help": "Using exponential moving averages (0/1 ~ True/False)",
     "type": "int"
   },
     "-maxdegree": {
