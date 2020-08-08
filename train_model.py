@@ -5,10 +5,17 @@ import os
 import sys
 import torch
 import time
+from torchvision.utils import make_grid, save_image
+from tqdm import tqdm
+import numpy as np
+from torch.nn import functional
+from skimage import io
+from skimage import img_as_ubyte
 
-from utils.dataloader import Dataloader
+from utils.dataloader import Dataloader, normalize
 from utils.utils import setup
 from utils.models import VQ_VAE_Training, Mode
+from fid import calculate_fid
 
 
 if __name__ == "__main__":
@@ -71,4 +78,49 @@ if __name__ == "__main__":
     print('\nTraining with %i epochs done! Time elapsed: %.2f hours' % (FLAGS.maxepochs, (time.time() - time_start)/360))
 
     os.system(f"cp utils/models.py {network_dir}/models.py ")
-    os.system(f"cp utils/config.json {network_dir}/config.json ")
+    os.system(f"cp config.json {network_dir}/config.json ")
+
+    for param in vq_vae.vq_vae.bottom_encoder.cnn:
+        try:
+            print(param.weight)
+        except AttributeError:
+            break
+
+    os.makedirs(f"{network_dir}/generated_train_images", exist_ok=True)
+    os.makedirs(f"{network_dir}/generated_valid_images", exist_ok=True)
+
+    batch_size = 32
+    num_images = 10240
+    n_batches = num_images // batch_size
+
+    for path in [input_path, valid_path]:
+        image_list = os.listdir(path)
+        try:
+            image_list.remove(".snakemake_timestamp")
+        except ValueError:
+            pass
+        assert len(os.listdir(path)) >= num_images
+
+        image_list = image_list[:num_images]
+        first_image = io.imread(path + image_list[0])
+        W, H = first_image.shape[:2]
+        data = np.zeros((len(image_list), H, W, 3), dtype=first_image.dtype)
+        for idx, jpeg in enumerate(image_list):
+            im = io.imread(path + jpeg)
+            assert im.dtype == data.dtype
+            data[idx] = im
+
+        with torch.no_grad():
+            data = torch.tensor(data).permute(0, 3, 1, 2).float()
+            for i in range(n_batches):
+                reconstructions = vq_vae.vq_vae(data[i*batch_size:(i+1)*batch_size].to(device)).cpu().detach()
+                for k, reconstruction in enumerate(reconstructions.permute(0, 2, 3, 1)):
+                    print(reconstruction.shape)
+                    assert reconstruction.shape == (256, 256, 3)
+                    if path == input_path:
+                        io.imsave(f"{network_dir}/generated_train_images/{image_list[i*batch_size+k]}",
+                                  img_as_ubyte(reconstruction.numpy()))
+                    else:
+                        io.imsave(f"{network_dir}/generated_valid_images/{image_list[i*batch_size+k]}",
+                                  img_as_ubyte(reconstruction.numpy()))
+

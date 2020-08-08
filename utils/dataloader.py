@@ -6,6 +6,10 @@ import torch
 import os
 
 
+def normalize(image):
+    return torch.div(torch.sub(image, torch.min(image)), torch.max(image) - torch.min(image))
+
+
 class VQVAEDataset(Dataset):
     def __init__(self, data):
         super(VQVAEDataset, self).__init__()
@@ -27,20 +31,18 @@ def Dataloader(path, batch_size=128, num_workers=16, shuffle=True):
     if path == "":
         return None
 
-    def normalize(image):
-        return torch.div(torch.sub(image, torch.min(image)), torch.max(image) - torch.min(image))
-
     dataset = ImageFolder(
         os.path.dirname(os.path.dirname(path)),
         transform=Compose([ToTensor(), normalize])
     )
     dataset = VQVAEDataset(dataset)
-    dataset = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=shuffle
-    )
+    if batch_size:
+        dataset = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            shuffle=shuffle
+        )
 
     return dataset
 

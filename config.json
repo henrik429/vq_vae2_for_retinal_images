@@ -97,7 +97,7 @@
   },
     "-hidden_channels": {
     "short": "-hc",
-    "value": 75,
+    "value": 40,
     "help": "Number of hidden_channels",
     "type": "int"
   },

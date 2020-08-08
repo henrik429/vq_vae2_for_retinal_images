@@ -9,11 +9,13 @@ import matplotlib.patches as mpatches
 from skimage import io
 from torch.utils.data import DataLoader
 from scipy.spatial.distance import pdist, squareform
+import os
 
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 from sklearn.decomposition._pca import PCA
 from scipy.cluster import hierarchy
 from scipy import stats
+from torchvision.utils import make_grid, save_image
 
 import seaborn as sns
 
@@ -256,6 +258,12 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                 z_e, indices = vq_vae.encode((data))
                 encodings[i:i + data.size(0)] = z_e.reshape(data.size(0), size_latent_space * emb_dim)
 
+            if i < 10:
+                reconstruction = vq_vae(data).cpu().detach()
+                grid = make_grid(torch.cat((data.cpu()[0:10], reconstruction[0:10]), dim=0), nrow=10)
+                save_image(grid, f"{network_dir}/test_{i}.png", normalize=True)
+
+
     if mode == Mode.vq_vae_2:
         encodings_bottom = encodings_bottom.detach().numpy()
         encodings_top = encodings_top.detach().numpy()
@@ -266,6 +274,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     for i in range(levels):
         patches.append(mpatches.Patch(color=colormap[i], label=f'{disease_states[i]}'))
 
+    makedirs(f"{network_dir}/outlier")
     for metric in tqdm(['euclidean']): # 'cosine', 'correlation']):  'euclidean'
         for n_neighbors in [2,100,200]:   # ,10,20,50,100, 200):
             for min_dist in [0.0]:    #, 0.1, 0.25, 0.5, 0.8):
@@ -285,6 +294,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
                         print(f"\n{pos_to_delete.shape[0]} outliers:")
                         for i in pos_to_delete:
+                            os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
                             print(jpg_list[i])
 
                         encodings_bottom = np.delete(encodings_bottom, pos_to_delete, axis=0)
@@ -329,6 +339,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
                         print(f"\n{pos_to_delete.shape[0]} outliers:")
                         for i in pos_to_delete:
+                            os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
                             print(jpg_list[i])
 
                         encodings_top = np.delete(encodings_top, pos_to_delete, axis=0)
@@ -373,6 +384,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
                         print(f"\n{pos_to_delete.shape[0]} outliers:")
                         for i in pos_to_delete:
+                            os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
                             print(jpg_list[i])
 
                         encodings = np.delete(encodings, pos_to_delete, axis=0)

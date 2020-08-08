@@ -43,6 +43,15 @@ if __name__ == "__main__":
     vq_vae.to(device=device)
     vq_vae.eval()
 
+    if mode == Mode.vq_vae_2:
+        print(vq_vae.vector_quantization_bottom.embedding)
+
+    for param in vq_vae.bottom_encoder.cnn:
+        try:
+            print(param.weight)
+        except AttributeError:
+            break
+
     # Visualization of the latent space
     test_path = FLAGS.test
     test_data = Dataloader(test_path, batch_size=FLAGS.batch_size)

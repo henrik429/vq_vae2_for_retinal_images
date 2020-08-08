@@ -3,54 +3,16 @@
 ########################################################################################
 
 import torch
-from torch import nn
-from torchvision.models import inception_v3
-from skimage import io
-import multiprocessing
+from skimage import io, img_as_float32
 import numpy as np
-import glob
 import os
 from scipy import linalg
 from tqdm import tqdm
 
+from utils.inception import InceptionV3
 from utils.utils import setup
-from utils.models import Mode, VQ_VAE_2, VQ_VAE
-from torchvision.utils import make_grid, save_image
-
 import warnings
 
-
-class PartialInceptionNetwork(nn.Module):
-
-    def __init__(self, transform_input=True):
-        super().__init__()
-        self.inception_network = inception_v3(pretrained=True)
-        self.inception_network.Mixed_7c.register_forward_hook(self.output_hook)
-        self.transform_input = transform_input
-
-    def output_hook(self, module, input, output):
-        # N x 2048 x 8 x 8
-        self.mixed_7c_output = output
-
-    def forward(self, x):
-        """
-        Args:
-            x: shape (N, 3, 299, 299) dtype: torch.float32 in range 0-1
-        Returns:
-            inception activations: torch.tensor, shape: (N, 2048), dtype: torch.float32
-        """
-        assert x.shape[1:] == (3, 299, 299), "Expected input shape to be: (N,3,299,299)" + \
-                                             ", but got {}".format(x.shape)
-        x = x * 2 - 1  # Normalize to [-1, 1]
-
-        # Trigger output hook
-        self.inception_network(x)
-
-        # Output: N x 2048 x 1 x 1
-        activations = self.mixed_7c_output
-        activations = torch.nn.functional.adaptive_avg_pool2d(activations, (1, 1))
-        activations = activations.view(x.shape[0], 2048)
-        return activations
 
 
 def get_activations(images, batch_size, device="cpu"):
@@ -62,11 +24,8 @@ def get_activations(images, batch_size, device="cpu"):
     --
     Returns: np array shape: (N, 2048), dtype: np.float32
     """
-    assert images.shape[1:] == (3, 299, 299), "Expected input shape to be: (N,3,299,299)" + \
-                                              ", but got {}".format(images.shape)
-
     num_images = images.shape[0]
-    inception_network = PartialInceptionNetwork()
+    inception_network = InceptionV3()
     inception_network = inception_network.to(device)
     inception_network.eval()
     n_batches = int(np.ceil(num_images / batch_size))
@@ -77,9 +36,9 @@ def get_activations(images, batch_size, device="cpu"):
 
         ims = images[start_idx:end_idx]
         ims = ims.to(device)
-        activations = inception_network(ims)
+        activations = inception_network(ims)[0].view(batch_size, -1)
         activations = activations.detach().cpu().numpy()
-        assert activations.shape == (ims.shape[0], 2048), "Expexted output shape to be: {}, but was: {}".format(
+        assert activations.shape == (ims.shape[0], 2048), "Expected output shape to be: {}, but was: {}".format(
             (ims.shape[0], 2048), activations.shape)
         inception_activations[start_idx:end_idx, :] = activations
     return inception_activations
@@ -94,7 +53,6 @@ def calculate_activation_statistics(images, batch_size, device="cpu"):
         mu:     mean over all activations from the last pool layer of the inception model
         sigma:  covariance matrix over all activations from the last pool layer
                 of the inception model.
-
     """
     act = get_activations(images, batch_size, device)
     mu = np.mean(act, axis=0)
@@ -156,59 +114,7 @@ def calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     return diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * tr_covmean
 
 
-def preprocess_image(im):
-    """Resizes and shifts the dynamic range of image to 0-1
-    Args:
-        im: np.array, shape: (H, W, 3), dtype: float32 between 0-1 or np.uint8
-    Return:
-        im: torch.tensor, shape: (3, 299, 299), dtype: torch.float32 between 0-1
-    """
-    assert im.shape[2] == 3
-    assert len(im.shape) == 3
-    if im.dtype == np.uint8:
-        im = im.astype(np.float32) / 255
-    im = np.resize(im, (299, 299, 3))
-    im = np.rollaxis(im, axis=2)
-    im = torch.from_numpy(im)
-    assert im.max() <= 1.0
-    assert im.min() >= 0.0
-    assert im.dtype == torch.float32
-    assert im.shape == (3, 299, 299)
-
-    return im
-
-
-def preprocess_images(images, use_multiprocessing):
-    """Resizes and shifts the dynamic range of image to 0-1
-    Args:
-        images: np.array, shape: (N, H, W, 3), dtype: float32 between 0-1 or np.uint8
-        use_multiprocessing: If multiprocessing should be used to pre-process the images
-    Return:
-        final_images: torch.tensor, shape: (N, 3, 299, 299), dtype: torch.float32 between 0-1
-    """
-    if use_multiprocessing:
-        with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
-            jobs = []
-            for im in images:
-                job = pool.apply_async(preprocess_image, (im,))
-                jobs.append(job)
-            final_images = torch.zeros(images.shape[0], 3, 299, 299)
-            for idx, job in enumerate(jobs):
-                im = job.get()
-                final_images[idx] = im  # job.get()
-    else:
-        # final_images = torch.stack([preprocess_image(im) for im in images], dim=0)
-        final_images = torch.zeros(images.shape[0], 3, 299, 299)
-        for idx, img in enumerate(images):
-            final_images[idx] = preprocess_image(img)
-    assert final_images.shape == (images.shape[0], 3, 299, 299)
-    assert final_images.max() <= 1.0
-    assert final_images.min() >= 0.0
-    assert final_images.dtype == torch.float32
-    return final_images
-
-
-def calculate_fid(images1, images2, use_multiprocessing, batch_size, device="cpu"):
+def calculate_fid(images1, images2, batch_size, device="cpu"):
     """ Calculate FID between images1 and images2
     Args:
         images1: np.array, shape: (N, H, W, 3), dtype: np.float32 between 0-1 or np.uint8
@@ -218,37 +124,10 @@ def calculate_fid(images1, images2, use_multiprocessing, batch_size, device="cpu
     Returns:
         FID (scalar)
     """
-    images1 = preprocess_images(images1, use_multiprocessing)
-    images2 = preprocess_images(images2, use_multiprocessing)
     mu1, sigma1 = calculate_activation_statistics(images1, batch_size, device)
     mu2, sigma2 = calculate_activation_statistics(images2, batch_size, device)
     fid = calculate_frechet_distance(mu1, sigma1, mu2, sigma2)
     return fid
-
-
-def load_images(path, num_images):
-    """ Loads all .png or .jpg images from a given path
-    Warnings: Expects all images to be of same dtype and shape.
-    Args:
-        path: relative path to directory
-    Returns:
-        final_images: np.array of image dtype and shape.
-    """
-    image_list = os.listdir(path)
-    try:
-        image_list.remove(".snakemake_timestamp")
-    except ValueError:
-        pass
-
-    image_list = image_list[:num_images]
-    first_image = io.imread(path+image_list[0])
-    W, H = first_image.shape[:2]
-    final_images = np.zeros((len(image_list), H, W, 3), dtype=first_image.dtype)
-    for idx, jpeg in enumerate(image_list):
-        im = io.imread(path+jpeg)
-        assert im.dtype == final_images.dtype
-        final_images[idx] = im
-    return final_images
 
 
 if __name__ == "__main__":
@@ -256,80 +135,38 @@ if __name__ == "__main__":
     input_path = FLAGS.input
     valid_path = FLAGS.valid
     device = FLAGS.device if torch.cuda.is_available() else "cpu"
-    mode = Mode.vq_vae if FLAGS.mode == 1 else Mode.vq_vae_2
-
     network_dir = f'{FLAGS.path_prefix}/models/{FLAGS.network_name}'
+    batch_size = 32
+    num_images = 10240
 
-    os.makedirs(f"{network_dir}/generated_train_images", exist_ok=True)
-    os.makedirs(f"{network_dir}/generated_valid_images", exist_ok=True)
-    use_multiprocessing = False
-    batch_size = 64
-    num_images = 12800
-    n_batches = num_images // batch_size
-
-    if mode == Mode.vq_vae:
-        num_emb = FLAGS.num_emb
-        emb_dim = FLAGS.emb_dim
-        size_latent_space = FLAGS.size_latent_space ** 2
-
-        vq_vae = VQ_VAE(
-            hidden_channels=FLAGS.hidden_channels,
-            num_emb=num_emb,
-            emb_dim=emb_dim,
-        )
-
-    else:
-        num_emb = {"bottom": FLAGS.num_emb_bottom, "top": FLAGS.num_emb_top}
-        emb_dim = {"bottom": FLAGS.emb_dim_bottom, "top": FLAGS.emb_dim_top}
-        size_latent_space = {"bottom": FLAGS.size_latent_space_bottom ** 2, "top": FLAGS.size_latent_space_top ** 2}
-
-        vq_vae = VQ_VAE_2(
-            hidden_channels=FLAGS.hidden_channels,
-            num_emb=num_emb,
-            emb_dim=emb_dim,
-        ).to(device=device)
-
-    vq_vae.load_state_dict(torch.load(f"{network_dir}/{FLAGS.network_name}.pth"))
-    vq_vae.to(device=device)
-    vq_vae.eval()
-
-    if mode == Mode.vq_vae_2:
-        print(vq_vae.vector_quantization_bottom.embedding)
-
-    #print("Model's state_dict:")
-    #for param_tensor in vq_vae.state_dict():
-    #    print(param_tensor, "\t", vq_vae.state_dict()[param_tensor].size())
-
+    print("\nCalculate FID-Score...")
     file = open(f"{network_dir}/fid_{FLAGS.network_name}.txt", 'w')
+    gen_train_path = f"{network_dir}/generated_train_images/"
+    gen_valid_path = f"{network_dir}/generated_valid_images/"
 
-    for path in [input_path, valid_path]:
-        assert len(os.listdir(path)) >= num_images
-        real_images = load_images(path, num_images)
-        generated_images = np.zeros_like(real_images)
-        with torch.no_grad():
-            data = torch.tensor((real_images)).permute(0,3,1,2).float()
-            for batch_idx in tqdm(range(n_batches)):
-                start_idx = batch_size * batch_idx
-                end_idx = batch_size * (batch_idx + 1)
+    for path1, path2 in [(gen_train_path, input_path), (gen_valid_path, valid_path)]:
+        generated_images = torch.zeros((num_images, 3, 256, 256))
+        real_images = torch.zeros((num_images, 3, 256, 256))
+        for i, jpg in enumerate(os.listdir(path1)):
+            generated_images[i] = torch.tensor(img_as_float32(io.imread(path1+jpg))).permute(2, 0, 1).float()
+            real_images[i] = torch.tensor(img_as_float32(io.imread(path2+jpg))).permute(2, 0, 1).float()
 
-                reconstructions = vq_vae(data[start_idx:end_idx].to(device)).cpu().detach()
-                generated_images[start_idx:end_idx] = reconstructions.permute(0,2,3,1).numpy()
-                if path == input_path and reconstructions.size(0) > 50:
-                    grid = make_grid(torch.cat((data[start_idx:end_idx][0:50:5], reconstructions[0:50:5]), dim=0), nrow=10)
-                    save_image(grid,
-                               f"{network_dir}/generated_train_images/gen_train_imgs_{batch_idx}.png",
-                               normalize=True)
-                elif path == valid_path and reconstructions.size(0) > 50:
-                    grid = make_grid(torch.cat((data[start_idx:end_idx][0:50:5], reconstructions[0:50:5]), dim=0), nrow=10)
-                    save_image(grid,
-                               f"{network_dir}/generated_valid_images/gen_valid_imgs_{batch_idx}.png",
-                               normalize=True)
+        assert generated_images.shape == (generated_images.shape[0], 3, 256, 256)
+        assert generated_images.max() <= 1.0
+        assert generated_images.min() >= 0.0
+        assert generated_images.dtype == torch.float32
 
-        fid_value = calculate_fid(real_images, generated_images, use_multiprocessing, batch_size, device)
+        assert real_images.shape == (real_images.shape[0], 3, 256, 256)
+        assert real_images.max() <= 1.0
+        assert real_images.min() >= 0.0
+        assert real_images.dtype == torch.float32
 
-        if path==input_path:
+        fid_value = calculate_fid(real_images, generated_images, batch_size, device)
+
+        if path2 == input_path:
             print(f"\nThe FID Score of the train data is: {fid_value}\n")
             file.write(f"\nThe FID Score of the train data is: {fid_value}\n")
         else:
             print(f"\nThe FID Score of the valid data is: {fid_value}\n")
             file.write(f"\nThe FID Score of the valid data is: {fid_value}\n")
+
