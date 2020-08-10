@@ -115,7 +115,6 @@ if __name__ == "__main__":
             for i in range(n_batches):
                 reconstructions = vq_vae.vq_vae(data[i*batch_size:(i+1)*batch_size].to(device)).cpu().detach()
                 for k, reconstruction in enumerate(reconstructions.permute(0, 2, 3, 1)):
-                    print(reconstruction.shape)
                     assert reconstruction.shape == (256, 256, 3)
                     if path == input_path:
                         io.imsave(f"{network_dir}/generated_train_images/{image_list[i*batch_size+k]}",
