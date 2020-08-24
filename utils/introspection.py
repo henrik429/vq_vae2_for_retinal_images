@@ -57,8 +57,6 @@ def visualize_latent_space(img_folder, csv, vae,
     makedirs(f'{network_dir}/visualizations/', exist_ok=True)
     makedirs(f'{network_dir}/histograms/', exist_ok=True)
 
-    targets = np.zeros(data_size, dtype=np.uint8)
-
     # Numbers in angles have to be in a specific order
     angles = [x for x in range(-max_degree, -9)]
     angles.extend([x for x in range(10, max_degree + 1)])

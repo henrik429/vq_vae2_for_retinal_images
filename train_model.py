@@ -5,17 +5,13 @@ import os
 import sys
 import torch
 import time
-from torchvision.utils import make_grid, save_image
-from tqdm import tqdm
 import numpy as np
-from torch.nn import functional
 from skimage import io
-from skimage import img_as_ubyte
+from skimage import img_as_float32
 
-from utils.dataloader import Dataloader, normalize
+from utils.dataloader import Dataloader
 from utils.utils import setup
 from utils.models import VQ_VAE_Training, Mode
-from fid import calculate_fid
 
 
 if __name__ == "__main__":
@@ -27,6 +23,7 @@ if __name__ == "__main__":
 
     network_dir = f'{FLAGS.path_prefix}/models/{FLAGS.network_name}'
     os.makedirs(network_dir, exist_ok=True)
+    batch_size = FLAGS.batch_size
 
     if FLAGS.network_name in os.listdir(network_dir):
         input1 = input("\nNetwork already exists. Are you sure to proceed? ([y]/n) ")
@@ -36,27 +33,39 @@ if __name__ == "__main__":
     train_data = Dataloader(input_path, batch_size=FLAGS.batch_size)
     valid_data = Dataloader(valid_path, batch_size=FLAGS.batch_size)
 
+    for data, in train_data:
+        image_size = data.size(2)
+        break
+
     mode = Mode.vq_vae if FLAGS.mode == 1 else Mode.vq_vae_2
 
     if mode == Mode.vq_vae:
         num_emb=FLAGS.num_emb
         emb_dim=FLAGS.emb_dim
         size_latent_space = FLAGS.size_latent_space ** 2
-    else:
+        reduction_factor = image_size // FLAGS.size_latent_space
+
+    elif mode == Mode.vq_vae_2:
         num_emb = {"top": FLAGS.num_emb_top, "bottom": FLAGS.num_emb_bottom}
         emb_dim = {"top": FLAGS.emb_dim_top, "bottom": FLAGS.emb_dim_bottom}
         size_latent_space = {"top": FLAGS.size_latent_space_top ** 2,
-                             "bottom": FLAGS.size_latent_space_bottom ** 2
-        }
+                             "bottom": FLAGS.size_latent_space_bottom ** 2}
+        reduction_factor = {"top": image_size // FLAGS.size_latent_space_bottom // FLAGS.size_latent_space_top,
+                            "bottom": image_size // FLAGS.size_latent_space_bottom}
+
 
     vq_vae = VQ_VAE_Training(
         train_data,
         valid=valid_data,
         mode=mode,
         training=True,
+        reduction_factor=reduction_factor,
         hidden_channels=FLAGS.hidden_channels,
         num_emb=num_emb,
         emb_dim=emb_dim,
+        z_dim=FLAGS.z_dim,
+        image_size=image_size,
+        encoding_channels=FLAGS.encoding_channels,
         optimizer=torch.optim.Adam,
         optimizer_kwargs=None,
         max_epochs=FLAGS.maxepochs,
@@ -80,16 +89,17 @@ if __name__ == "__main__":
     os.system(f"cp utils/models.py {network_dir}/models.py ")
     os.system(f"cp config.json {network_dir}/config.json ")
 
+    """
     for param in vq_vae.vq_vae.bottom_encoder.cnn:
         try:
             print(param.weight)
         except AttributeError:
             break
+    """
 
     os.makedirs(f"{network_dir}/generated_train_images", exist_ok=True)
     os.makedirs(f"{network_dir}/generated_valid_images", exist_ok=True)
 
-    batch_size = 32
     num_images = 10240
     n_batches = num_images // batch_size
 
@@ -99,6 +109,7 @@ if __name__ == "__main__":
             image_list.remove(".snakemake_timestamp")
         except ValueError:
             pass
+
         assert len(os.listdir(path)) >= num_images
 
         image_list = image_list[:num_images]
@@ -113,13 +124,13 @@ if __name__ == "__main__":
         with torch.no_grad():
             data = torch.tensor(data).permute(0, 3, 1, 2).float()
             for i in range(n_batches):
-                reconstructions = vq_vae.vq_vae(data[i*batch_size:(i+1)*batch_size].to(device)).cpu().detach()
+                reconstructions = vq_vae.vae(data[i * batch_size:(i + 1) * batch_size].to(device)).cpu().detach()
                 for k, reconstruction in enumerate(reconstructions.permute(0, 2, 3, 1)):
-                    assert reconstruction.shape == (256, 256, 3)
+                    assert reconstruction.shape == (W, H, 3)
                     if path == input_path:
                         io.imsave(f"{network_dir}/generated_train_images/{image_list[i*batch_size+k]}",
-                                  img_as_ubyte(reconstruction.numpy()))
+                                  img_as_float32(reconstruction.numpy()))
                     else:
                         io.imsave(f"{network_dir}/generated_valid_images/{image_list[i*batch_size+k]}",
-                                  img_as_ubyte(reconstruction.numpy()))
+                                  img_as_float32(reconstruction.numpy()))
 

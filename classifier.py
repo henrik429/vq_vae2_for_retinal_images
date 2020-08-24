@@ -114,11 +114,11 @@ if __name__ == "__main__":
     else:
         predictor = classifier(size_flatten_encodings=FLAGS.z_dim, num_targets=5).to(device)
 
-    kwargs = {"lr":2e-4}
+    kwargs = {"lr":5e-5}
     optimizer = torch.optim.Adam(predictor.parameters(), **kwargs)
     lossarray = []
     n_epochs = 1000
-    writer = SummaryWriter(f"{network_dir}/classifier")
+    writer = SummaryWriter(f"{network_dir}/classifier_tensorboard/")
     print("Start Training")
     for epoch in tqdm(range(n_epochs)):
         for i in range(n_batches):
@@ -178,13 +178,13 @@ if __name__ == "__main__":
         data.append(im)
 
     data = torch.tensor(data).permute(0, 3, 1, 2).float()
-    targets = torch.tensor(targets).float()
+    test_targets = torch.tensor(targets).float()
+    targets = np.asarray(targets)
     data_size = targets.shape[0]
     n_batches = data_size // batch_size
 
     correct = 0
     total = 0
-    outputs = torch.zeros_like(targets)
     with torch.no_grad():
         for i in range(n_batches):
             test_data = data[i * batch_size:(i + 1) * batch_size].to(device)
@@ -199,16 +199,16 @@ if __name__ == "__main__":
             predictions = predictor(encodings)
             _, predicted = torch.max(predictions.data, 1)
             total += batch_size
-            _, batch_targets = torch.max(targets[i * batch_size:(i + 1) * batch_size], 1)
+            _, batch_targets = torch.max(test_targets[i * batch_size:(i + 1) * batch_size], 1)
             batch_targets.to(device)
             for i in range(batch_size):
                 if predicted[i] == batch_targets[i]:
                     correct += 1
 
     print('Accuracy of the network on the %i test images: %d %%' % (data_size, 100 * correct / total))
-
+    assert predictions.shape == targets.shape
     # ROC-Curve/AUC
-    outputs = outputs.to(device="cpu").detach().numpy()
+    outputs = predictions.cpu().detach().numpy()
     targets = targets.float().numpy()
     colors = ['navy', 'green', 'orange', 'red', 'yellow']
 
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     plt.step(tpr['micro'], fpr['micro'], where='post')
     plt.xlabel('False Positive Rate / Sensitivity', fontsize=11)
     plt.ylabel('True Negative Rate / (1 - Specifity)', fontsize=11)
-    plt.ylim([0.0, 1.05])
+    plt.ylim([0.0, 1.0])
     plt.xlim([0.0, 1.0])
     plt.title(
         'AUC score, micro-averaged over all classes: AP={0:0.2f}'
