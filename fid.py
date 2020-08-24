@@ -28,7 +28,6 @@ def get_activations(images, batch_size, device="cpu"):
     inception_network = InceptionV3()
     inception_network = inception_network.to(device)
     inception_network.eval()
-    print(num_images)
     n_batches = int(np.floor(num_images / batch_size))
     inception_activations = np.zeros((num_images, 2048), dtype=np.float32)
     for batch_idx in range(n_batches):
