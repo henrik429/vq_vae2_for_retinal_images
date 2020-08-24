@@ -28,7 +28,8 @@ def get_activations(images, batch_size, device="cpu"):
     inception_network = InceptionV3()
     inception_network = inception_network.to(device)
     inception_network.eval()
-    n_batches = int(np.ceil(num_images / batch_size))
+    print(num_images)
+    n_batches = int(np.floor(num_images / batch_size))
     inception_activations = np.zeros((num_images, 2048), dtype=np.float32)
     for batch_idx in range(n_batches):
         start_idx = batch_size * batch_idx
@@ -36,7 +37,7 @@ def get_activations(images, batch_size, device="cpu"):
 
         ims = images[start_idx:end_idx]
         ims = ims.to(device)
-        activations = inception_network(ims)[0].view(batch_size, -1)
+        activations = inception_network(ims)[0].view(ims.shape[0], -1)
         activations = activations.detach().cpu().numpy()
         assert activations.shape == (ims.shape[0], 2048), "Expected output shape to be: {}, but was: {}".format(
             (ims.shape[0], 2048), activations.shape)
@@ -131,18 +132,20 @@ def calculate_fid(images1, images2, batch_size, device="cpu"):
 
 
 if __name__ == "__main__":
+
     FLAGS, logger = setup(running_script="./utils/models.py", config="./config.json")
     input_path = FLAGS.input
     valid_path = FLAGS.valid
     device = FLAGS.device if torch.cuda.is_available() else "cpu"
     network_dir = f'{FLAGS.path_prefix}/models/{FLAGS.network_name}'
-    batch_size = 32
-    num_images = 10240
 
     print("\nCalculate FID-Score...")
     file = open(f"{network_dir}/fid_{FLAGS.network_name}.txt", 'w')
     gen_train_path = f"{network_dir}/generated_train_images/"
     gen_valid_path = f"{network_dir}/generated_valid_images/"
+
+    num_images = len(os.listdir(gen_train_path))
+    batch_size = 32
 
     for path1, path2 in [(gen_train_path, input_path), (gen_valid_path, valid_path)]:
         generated_images = torch.zeros((num_images, 3, 256, 256))

@@ -26,7 +26,7 @@
   "-mode": {
     "short": "-mode",
     "value": 2,
-    "help": "VQ-VAE (1) or VQ-VAE-2 (2) or VAE (3)",
+    "help": "VQ-VAE (1) or VQ-VAE-2 (2)",
     "type": "int"
   },
   "-size_latent_space": {
@@ -43,20 +43,8 @@
   },
   "-size_latent_space_bottom": {
     "short": "-size_bottom",
-    "value": 16,
+    "value": 32,
     "help": "Must be powered by 2.",
-    "type": "int"
-  },
-  "-z_dim": {
-    "short": "-z",
-    "value": 128,
-    "help": "Latent vector of the VAE",
-    "type": "int"
-  },
-  "-encoding_channels": {
-    "short": "-ec",
-    "value": 8,
-    "help": "Channel Size of the VAE after convolution step",
     "type": "int"
   },
     "-path_prefix": {
@@ -97,7 +85,7 @@
   },
   "-maxepochs": {
     "short": "-me",
-    "value": 80,
+    "value": 50,
     "help": "Maximum nr of epochs to train the model",
     "type": "int"
   },
@@ -109,7 +97,7 @@
   },
     "-hidden_channels": {
     "short": "-hc",
-    "value": 100,
+    "value": 60,
     "help": "Number of hidden_channels",
     "type": "int"
   },
@@ -127,7 +115,7 @@
   },
   "-num_emb_top": {
     "short": "-K_top",
-    "value": 256,
+    "value": 30,
     "help": "Number of embedded vectors ",
     "type": "int"
   },
@@ -139,13 +127,13 @@
   },
   "-emb_dim_top": {
     "short": "-D_top",
-    "value": 8,
+    "value": 4,
     "help": "Size of each embedded vector",
     "type": "int"
   },
   "-emb_dim_bottom": {
     "short": "-D_bottom",
-    "value": 8,
+    "value": 4,
     "help": "Size of each embedded vector",
     "type": "int"
   },

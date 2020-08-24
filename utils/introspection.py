@@ -10,13 +10,11 @@ from skimage import io
 from torch.utils.data import DataLoader
 from scipy.spatial.distance import pdist, squareform
 import os
-
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 from sklearn.decomposition._pca import PCA
 from scipy.cluster import hierarchy
 from scipy import stats
 from torchvision.utils import make_grid, save_image
-
 import seaborn as sns
 
 from utils.models import Mode
@@ -25,24 +23,26 @@ import warnings
 warnings.simplefilter('ignore')
 
 
-def visualize_latent_space(test_data, img_folder, csv, vq_vae,
-                           max_degree, network_dir, network_name,
+def visualize_latent_space(img_folder, csv, vae,
+                           max_degree, network_dir,
                            num_emb,
                            emb_dim,
+                           z_dim=32,
                            batch_size=5,
                            mode=Mode.vq_vae,
                            size_latent_space=None,
                            device="cpu",
                            levels=5):
     """
-    Visualizes the latent space of a VQ-VAE and also its embedded Space.
+    Visualizes the latent space of a VQ-VAE.
     """
     jpg_list = listdir(img_folder)
     csv_df = read_csv(csv)
+    try:
+        jpg_list.remove(".snakemake_timestamp")
+    except ValueError:
+        pass
     data_size: int = len(jpg_list)
-
-    path = f'{network_dir}/{network_name}.pth'
-    torch.save(vq_vae.state_dict(), path)
 
     colors = ['navy', 'darkorange', 'red', 'limegreen', 'turquoise', 'firebrick',
               'indigo', 'darkgreen', 'cornflowerblue', 'sienna']
@@ -57,170 +57,6 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     makedirs(f'{network_dir}/visualizations/', exist_ok=True)
     makedirs(f'{network_dir}/histograms/', exist_ok=True)
 
-    if mode == Mode.vq_vae_2:
-        embeddings = vq_vae.vector_quantization_bottom.embedding.detach().cpu().numpy()
-        num_emb_bottom = num_emb["bottom"]
-        emb_dim_bottom = emb_dim["bottom"]
-        num_emb_top = num_emb["top"]
-        emb_dim_top = emb_dim["top"]
-        encodings_bottom = torch.zeros((data_size, size_latent_space["bottom"]*emb_dim_bottom))
-        encodings_top = torch.zeros((data_size, size_latent_space["top"]*emb_dim_top))
-    else:
-        embeddings = vq_vae.vector_quantization.embedding.detach().cpu().numpy()
-        encodings = torch.zeros((data_size, size_latent_space*emb_dim))
-
-    #################################################################
-    # Visualize the embedded space.
-    #################################################################
-
-    # Therefore reduce the embedded space from shape (num_dim, emb_dim) to (num_dim, n_compontents)
-    # using UMAP (, TSNE) or PCA where n_components should be 2 or 3 to be able to do a scatter plot
-    num_components = 3
-    pca = PCA(n_components=num_components).fit(embeddings)
-    for i in range(num_components):
-        print("Explained variance of component {0:d}: {1:.4f}".format(i + 1, pca.explained_variance_ratio_[i]))
-    pca = pca.transform(embeddings)
-
-    # Hierarchical clustering of the embedded Space
-    print(
-        "\nNote: the Cophenetic Correlation Coefficient compares (correlates) only very briefly the actual pairwise distances of all samples to those implied by the hierarchical clustering. "
-        "The closer the value is to 1, the better the clustering preserves the original distances.\n ")
-
-    # save best order of embedded vectors
-    best_order, best_c, best_metric = None, 0, 'euclidean'
-    for method in ['average', 'weighted', 'complete', 'ward']:
-        # methods single, median, centroid and complete seems to be unsuitable
-
-        if method not in ['centroid', 'median', 'ward']:
-            metrics = ['euclidean', 'seuclidean', 'cosine', 'correlation',
-                       # 'cityblock', 'chebyshev', seems not suitable
-                       # 'canberra',  --> bad for now
-                       'mahalanobis']
-        else:
-            # 'centroid', 'median' and 'ward' can only be applied when using euclidean distances as metric
-            metrics = ['euclidean']
-
-        for metric in metrics:
-            try :
-                Z = hierarchy.linkage(embeddings, method=method, metric=metric, optimal_ordering=True)
-                emb_distances_vector = pdist(embeddings, metric=metric)
-                c, coph_dists = hierarchy.cophenet(Z, emb_distances_vector)
-                print(f"The Cophenetic Correlation Coefficient of method: {method} and metric: {metric} is: %.4f" % c)
-
-                if method == 'ward':   # or c > best_c:
-                    best_order = hierarchy.leaves_list(Z)
-
-                plt.figure(figsize=(10, 7))
-                plt.title(f"dendogram - embedded space - {method} - {metric}")
-                hierarchy.dendrogram(Z)
-                plt.xlabel("index of embedded vector")
-                plt.show(block=False)
-                plt.savefig(f"{network_dir}/visualizations/dendrogram_embbeding_{method}_{metric}.png")
-                plt.pause(4)
-                plt.close()
-
-                """
-                # Plot hierarchical clustering with (TSNE,) PCA or UMAP Plot
-                cluster = hierarchy.fcluster(Z, t=5, criterion='maxclust') - 1
-    
-                fig = plt.figure()
-                ax = plt.axes(projection='3d')
-                ax.set_title(f"PCA - embedded space - {method} - {metric} \n")
-                ax.scatter(pca[:, 0], pca[:, 1], pca[:, 2], c=colormap[cluster], s=1, label=colormap)
-                plt.legend(handles=patches)
-                plt.show(block=False)
-                plt.pause(3)
-                # plt.savefig(f"{network_dir}/visualizations/hierarchical_clustering_embedding_pca_{method}_{metric}.png")
-                plt.close(fig)
-
-                # Use outcome of optimal order of distances to plot the heatmap
-                emb_distances_matrix = squareform(emb_distances_vector)
-
-                plt.figure(figsize=(7, 7))
-                mask = np.zeros_like(emb_distances_matrix)
-                mask[np.triu_indices_from(mask)] = True
-                with sns.axes_style("white"):
-                    sns.heatmap(emb_distances_matrix[hierarchy.leaves_list(Z)],
-                                cmap="YlGnBu",
-                                mask=mask,
-                                linewidth=0.0,
-                                square=True)  # sns.clustermap also possible
-                    plt.title(f"Heatmap - Embedded Space - {method} - {metric}", fontsize=13, fontweight='bold')
-                    # plt.savefig(f"{network_dir}/visualizations/heatmap_embeddings_{method}_{metric}.png")
-                    plt.xlabel("index of embedded vector")
-                    plt.ylabel("index of embedded vector")
-                    plt.show(block=False)
-                    plt.pause(3)
-                    plt.close()
-                """
-
-            except ValueError:
-                pass
-
-
-    """
-    # Plot embedded space with original order
-    # Using U-Map
-    umap_emb = UMAP(n_neighbors=40,
-                    min_dist=0.01,
-                    n_components=3,
-                    ).fit_transform(embeddings)
-
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.set_title("UMAP Clustering - Embedded Space - original order\n")
-    scatter = ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], c=np.arange(0, num_emb), s=1)
-    cbar = plt.colorbar(scatter)
-    cbar.set_label("Index", labelpad=+1)
-    plt.show()
-    plt.savefig(f"{network_dir}/visualizations/umap_clustering_embeddings_original_order.png")
-    plt.close(fig)
-
-    # Using PCA
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.set_title("PCA Clustering - Embedded Space - original order\n")
-    scatter = ax.scatter(pca[:, 0], pca[:, 1], pca[:, 2], s=1,
-                         c=np.arange(0, num_emb))
-    cbar = fig.colorbar(scatter)
-    cbar.set_label("Index of embedded vector", labelpad=+1)
-    plt.savefig(f"{network_dir}/visualizations/pca_clustering_original_order.png")
-    plt.show(block=False)
-    plt.pause(3)
-    plt.close(fig)
-
-    # Plot embedded space with optimal order
-    # Using U-Map
-    umap_emb = umap_emb[best_order]
-
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.set_title("UMAP Clustering - Embedded Space - original order\n")
-    scatter = ax.scatter(umap_emb[:, 0], umap_emb[:, 1], umap_emb[:, 2], s=1)
-    cbar = plt.colorbar(scatter)
-    cbar.set_label("Index", labelpad=+1)
-    plt.savefig(f"{network_dir}/visualizations/umap_clustering_embeddings_original_order.png")
-    plt.show()
-    plt.close(fig)
-
-    # Using PCA
-    pca = pca[best_order]
-
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.set_title("PCA Clustering - Embedded Space - best order\n")
-    scatter = ax.scatter(pca[:, 0], pca[:, 1], pca[:, 2], s=1,
-                         c=np.arange(0, num_emb))
-    cbar = fig.colorbar(scatter)
-    cbar.set_label("index of embedded vector", labelpad=+1)
-    plt.show(block=False)
-    plt.pause(3)
-    plt.close(fig)
-    """
-
-    ######################################################
-    # Visualization of the latents of a VQ-VAE
-    ######################################################
     targets = np.zeros(data_size, dtype=np.uint8)
 
     # Numbers in angles have to be in a specific order
@@ -228,13 +64,11 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
     angles.extend([x for x in range(10, max_degree + 1)])
     angles.extend([x for x in range(-9, 10)])
 
-    print("Generate targets...")
-    try:
-        jpg_list.remove(".snakemake_timestamp")
-    except ValueError:
-        pass
-
-    for i, jpg in tqdm(enumerate(jpg_list)):
+    data = []
+    targets = []
+    print("Load test data and generate their targets...")
+    for idx, jpg in tqdm(enumerate(jpg_list)):
+        original_jpg = jpg
         jpg = jpg.replace("_flipped", "")
         jpg = jpg.replace(".jpeg", "")
         jpg = jpg.replace(".jpg", "")
@@ -243,174 +77,209 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
         row_number = csv_df.loc[csv_df['image'] == jpg].index[0]
         level = csv_df.iloc[row_number].at['level']
-        targets[i] = level
+        targets.append(level)
+        im = io.imread(img_folder + original_jpg)
+        data.append(im)
+
+    test_data = torch.tensor(data).permute(0, 3, 1, 2).float()
+    targets = np.asarray(targets)
+    data_size = targets.shape[0]
+    n_batches = data_size//batch_size
+
+    if mode == Mode.vq_vae_2:
+        num_emb_bottom = num_emb["bottom"]
+        emb_dim_bottom = emb_dim["bottom"]
+        num_emb_top = num_emb["top"]
+        emb_dim_top = emb_dim["top"]
+        encodings_bottom = torch.zeros((data_size, size_latent_space["bottom"]*emb_dim_bottom))
+        encodings_top = torch.zeros((data_size, size_latent_space["top"]*emb_dim_top))
+    elif mode == Mode.vq_vae_2:
+        encodings = torch.zeros((data_size, size_latent_space*emb_dim))
+    elif mode == Mode.vae:
+        encodings = torch.zeros((data_size, z_dim))
+
+    ######################################################
+    # Visualization of the latents of a VQ-VAE
+    ######################################################
 
     print("Generate encodings...")
     with torch.no_grad():
-        for i, (data,) in tqdm(enumerate(test_data)):
-            data = data.to(device)
+        for i in tqdm(range(n_batches)):
+            data = test_data[i*batch_size:(i+1)*batch_size].to(device)
             if mode == Mode.vq_vae_2:
-                z_e_bottom, z_e_top, indices_bottom, indices_top = vq_vae.encode((data))
-                encodings_bottom[i:i + data.size(0)] = z_e_bottom.reshape(data.size(0), size_latent_space["bottom"] * emb_dim_bottom)
-                encodings_top[i:i + data.size(0)] = z_e_top.reshape(data.size(0), size_latent_space["top"] * emb_dim_top)
+                z_q_bottom, z_q_top, indices_bottom, indices_top = vae.encode((data))
+                encodings_bottom[i:i + data.size(0)] = z_q_bottom.reshape(data.size(0), size_latent_space["bottom"] * emb_dim_bottom)
+                encodings_top[i:i + data.size(0)] = z_q_top.reshape(data.size(0), size_latent_space["top"] * emb_dim_top)
+            elif mode == Mode.vq_vae:
+                z_q, indices = vae.encode((data))
+                encodings[i:i + data.size(0)] = z_q.reshape(data.size(0), size_latent_space * emb_dim)
+            elif mode == Mode.vae:
+                encodings[i:i + data.size(0)] = vae.encode(data)
 
-            else:
-                z_e, indices = vq_vae.encode((data))
-                encodings[i:i + data.size(0)] = z_e.reshape(data.size(0), size_latent_space * emb_dim)
-
-            if i < 10:
-                reconstruction = vq_vae(data).cpu().detach()
+            if i < 1:
+                reconstruction = vae(data).cpu().detach()
                 grid = make_grid(torch.cat((data.cpu()[0:10], reconstruction[0:10]), dim=0), nrow=10)
                 save_image(grid, f"{network_dir}/test_{i}.png", normalize=True)
 
-
     if mode == Mode.vq_vae_2:
-        encodings_bottom = encodings_bottom.detach().numpy()
-        encodings_top = encodings_top.detach().numpy()
+        encodings_bottom = encodings_bottom.cpu().detach().numpy()
+        encodings_top = encodings_top.cpu().detach().numpy()
     else:
-        encodings = encodings.detach().numpy()
+        encodings = encodings.cpu().detach().numpy()
 
     patches = []
     for i in range(levels):
         patches.append(mpatches.Patch(color=colormap[i], label=f'{disease_states[i]}'))
 
-    makedirs(f"{network_dir}/outlier")
-    for metric in tqdm(['euclidean']): # 'cosine', 'correlation']):  'euclidean'
-        for n_neighbors in [2,100,200]:   # ,10,20,50,100, 200):
-            for min_dist in [0.0]:    #, 0.1, 0.25, 0.5, 0.8):
-                if mode == Mode.vq_vae_2:
-                    try:
-                        # U-Map Visualization
-                        clusterable_embedding = UMAP(
-                            n_neighbors=n_neighbors,
-                            min_dist=min_dist,
-                            n_components=2,
-                            metric=metric
-                        ).fit_transform(encodings_bottom)
+    makedirs(f"{network_dir}/outlier", exist_ok=True)
+    for m in range(2):
+        """
+        m == 0: encodings = z_q
+        m == 1: encodings = indices
+        """
+        for n_neighbors in [20, 50, 150]:
+            if mode == Mode.vq_vae_2:
+                if m == 1:
+                    encodings_bottom = indices_bottom
+                    encodings_top = indices_top
 
-                        threshold = 3
-                        z = np.abs(stats.zscore(clusterable_embedding))
-                        pos_to_delete, = np.where(np.amax(z, axis=1) > threshold)
+                # U-Map Visualization
+                clusterable_embedding = UMAP(
+                    n_neighbors=n_neighbors,
+                    min_dist=0,
+                    n_components=2,
+                ).fit_transform(encodings_bottom)
 
-                        print(f"\n{pos_to_delete.shape[0]} outliers:")
-                        for i in pos_to_delete:
-                            os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
-                            print(jpg_list[i])
+                threshold = 3
+                z = np.abs(stats.zscore(clusterable_embedding))
+                pos_to_delete, = np.where(np.amax(z, axis=1) > threshold)
 
-                        encodings_bottom = np.delete(encodings_bottom, pos_to_delete, axis=0)
-                        encodings_top = np.delete(encodings_top, pos_to_delete, axis=0)
-                        targets = np.delete(targets, pos_to_delete, axis=0)
+                print(f"\n{pos_to_delete.shape[0]} outliers:")
+                for i in pos_to_delete:
+                    os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
+                    print(jpg_list[i])
 
-                        clusterable_embedding = UMAP(
-                            n_neighbors=n_neighbors,
-                            min_dist=min_dist,
-                            n_components=2,
-                            metric=metric
-                        ).fit_transform(encodings_bottom)
+                encodings_bottom = np.delete(encodings_bottom, pos_to_delete, axis=0)
+                encodings_top = np.delete(encodings_top, pos_to_delete, axis=0)
+                targets = np.delete(targets, pos_to_delete, axis=0)
 
-                        plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
-                                    c=colormap[targets],
-                                    s=0.4
-                                    )
-                        plt.legend(handles=patches)
-                        plt.title(f"UMAP-Visualization - {metric} - {min_dist} - {n_neighbors} - latents",
-                                  fontsize=13,
-                                  fontweight='bold')
-                        plt.savefig(
-                            f"{network_dir}/visualizations/umap_visualization_bottom_latents_{metric}_{min_dist}_{n_neighbors}.png")
-                        plt.show()
-                        plt.close()
+                clusterable_embedding = UMAP(
+                    n_neighbors=n_neighbors,
+                    min_dist=0,
+                    n_components=2,
+                ).fit_transform(encodings_bottom)
 
-                    except ZeroDivisionError:
-                        pass
-
-                    try:
-                        # U-Map Visualization
-                        clusterable_embedding = UMAP(
-                            n_neighbors=n_neighbors,
-                            min_dist=min_dist,
-                            n_components=2,
-                            metric=metric
-                        ).fit_transform(encodings_top)
-
-                        threshold = 3
-                        z = np.abs(stats.zscore(clusterable_embedding))
-                        pos_to_delete, = np.where(np.amax(z, axis=1) > threshold)
-
-                        print(f"\n{pos_to_delete.shape[0]} outliers:")
-                        for i in pos_to_delete:
-                            os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
-                            print(jpg_list[i])
-
-                        encodings_top = np.delete(encodings_top, pos_to_delete, axis=0)
-                        encodings_bottom = np.delete(encodings_bottom, pos_to_delete, axis=0)
-                        targets = np.delete(targets, pos_to_delete, axis=0)
-
-                        clusterable_embedding = UMAP(
-                            n_neighbors=n_neighbors,
-                            min_dist=min_dist,
-                            n_components=2,
-                            metric=metric
-                        ).fit_transform(encodings_top)
-
-                        plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
-                                    c=colormap[targets],
-                                    s=0.4
-                                    )
-                        plt.legend(handles=patches)
-                        plt.title(f"UMAP-Visualization - {metric} - {min_dist} - {n_neighbors} - latents",
-                                  fontsize=13,
-                                  fontweight='bold')
-                        plt.savefig(
-                            f"{network_dir}/visualizations/umap_visualization_top_latents_{metric}_{min_dist}_{n_neighbors}.png")
-                        plt.show()
-                        plt.close()
-
-                    except ZeroDivisionError:
-                        pass
+                plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
+                            c=colormap[targets],
+                            s=0.4
+                            )
+                plt.legend(handles=patches)
+                if m == 0:
+                    plt.title(f"UMAP-Visualization - {n_neighbors} - encodings - bottom - latents",
+                              fontsize=13,
+                              fontweight='bold')
+                    plt.savefig(
+                        f"{network_dir}/visualizations/umap_visualization_encodings_bottom_latents_{n_neighbors}.png")
                 else:
-                    try:
-                        # U-Map Visualization
-                        clusterable_embedding = UMAP(
-                            n_neighbors=n_neighbors,
-                            min_dist=min_dist,
-                            n_components=2,
-                            metric=metric
-                        ).fit_transform(encodings)
+                    plt.title(f"UMAP-Visualization - {n_neighbors} - indices - bottom - latents",
+                              fontsize=13,
+                              fontweight='bold')
+                    plt.savefig(
+                        f"{network_dir}/visualizations/umap_visualization_indices_bottom_latents_{n_neighbors}.png")
+                plt.close()
 
-                        threshold = 3
-                        z = np.abs(stats.zscore(clusterable_embedding))
-                        pos_to_delete, = np.where(np.amax(z, axis=1) > threshold)
+                # U-Map Visualization
+                clusterable_embedding = UMAP(
+                    n_neighbors=n_neighbors,
+                    min_dist=0,
+                    n_components=2,
+                ).fit_transform(encodings_top)
 
-                        print(f"\n{pos_to_delete.shape[0]} outliers:")
-                        for i in pos_to_delete:
-                            os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
-                            print(jpg_list[i])
+                threshold = 3
+                z = np.abs(stats.zscore(clusterable_embedding))
+                pos_to_delete, = np.where(np.amax(z, axis=1) > threshold)
 
-                        encodings = np.delete(encodings, pos_to_delete, axis=0)
-                        targets = np.delete(targets, pos_to_delete, axis=0)
+                print(f"\n{pos_to_delete.shape[0]} outliers:")
+                for i in pos_to_delete:
+                    os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
+                    print(jpg_list[i])
 
-                        clusterable_embedding = UMAP(
-                            n_neighbors=n_neighbors,
-                            min_dist=min_dist,
-                            n_components=2,
-                            metric=metric
-                        ).fit_transform(encodings)
+                encodings_top = np.delete(encodings_top, pos_to_delete, axis=0)
+                encodings_bottom = np.delete(encodings_bottom, pos_to_delete, axis=0)
+                targets = np.delete(targets, pos_to_delete, axis=0)
 
-                        plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
-                                    c=colormap[targets],
-                                    s=0.4
-                                    )
-                        plt.legend(handles=patches)
-                        plt.title(f"UMAP-Visualization - {metric} - {min_dist} - {n_neighbors} - latents",
-                                  fontsize=13,
-                                  fontweight='bold')
-                        plt.savefig(f"{network_dir}/visualizations/umap_visualization_latents_{metric}_{min_dist}_{n_neighbors}.png")
-                        plt.show()
-                        plt.close()
+                clusterable_embedding = UMAP(
+                    n_neighbors=n_neighbors,
+                    min_dist=0,
+                    n_components=2,
+                ).fit_transform(encodings_top)
 
-                    except ZeroDivisionError:
-                        pass
+                plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
+                            c=colormap[targets],
+                            s=0.4
+                            )
+                plt.legend(handles=patches)
+                if m == 0:
+                    plt.title(f"UMAP-Visualization - {n_neighbors} - encodings - top - latents",
+                              fontsize=13,
+                              fontweight='bold')
+                    plt.savefig(
+                        f"{network_dir}/visualizations/umap_visualization_encodings_bottom_latents_{n_neighbors}.png")
+                else:
+                    plt.title(f"UMAP-Visualization - {n_neighbors} - indices - top - latents",
+                              fontsize=13,
+                              fontweight='bold')
+                    plt.savefig(
+                        f"{network_dir}/visualizations/umap_visualization_indices_bottom_latents_{n_neighbors}.png")
+                plt.close()
+
+            else:
+                if m == 1 and mode == Mode.vae:
+                    break
+                elif m == 1 and mode == Mode.vq_vae:
+                    encodings = indices
+
+                # U-Map Visualization
+                clusterable_embedding = UMAP(
+                    n_neighbors=n_neighbors,
+                    min_dist=0,
+                    n_components=2,
+                ).fit_transform(encodings)
+
+                threshold = 3
+                z = np.abs(stats.zscore(clusterable_embedding))
+                pos_to_delete, = np.where(np.amax(z, axis=1) > threshold)
+
+                print(f"\n{pos_to_delete.shape[0]} outliers:")
+                for i in pos_to_delete:
+                    os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
+                    print(jpg_list[i])
+
+                encodings = np.delete(encodings, pos_to_delete, axis=0)
+                targets = np.delete(targets, pos_to_delete, axis=0)
+
+                clusterable_embedding = UMAP(
+                    n_neighbors=n_neighbors,
+                    n_components=2,
+                ).fit_transform(encodings)
+
+                plt.scatter(clusterable_embedding[:, 0], clusterable_embedding[:, 1],
+                            c=colormap[targets],
+                            s=0.4
+                            )
+                plt.legend(handles=patches)
+                if m == 0:
+                    plt.title(f"UMAP-Visualization - {n_neighbors} - encodings - latents",
+                              fontsize=13,
+                              fontweight='bold')
+                    plt.savefig(f"{network_dir}/visualizations/umap_visualization_encodings_latents_{n_neighbors}.png")
+                else:
+                    plt.title(f"UMAP-Visualization - {n_neighbors} - indices - latents",
+                              fontsize=13,
+                              fontweight='bold')
+                    plt.savefig(f"{network_dir}/visualizations/umap_visualization_indices_latents_{n_neighbors}.png")
+                plt.show()
+                plt.close()
 
     data = [[] for _ in range(levels)]
     print("Generate data for histograms...")
@@ -433,7 +302,6 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         histograms = {"bottom": np.zeros((levels, num_emb_bottom), dtype=np.float64),
                       "top": np.zeros((levels, num_emb_top), dtype=np.float64)}
 
-        # TODO: best_order could be adapted for the vq_vae2
         for stage in ["bottom", "top"]:
             # Plot overlap of histograms
             plt.figure(figsize=(12, 12))
@@ -453,7 +321,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                 with torch.no_grad():
                     for i, d in enumerate(level_data):
                         d = d.permute(0, 3, 1, 2).float().to(device)
-                        _, _, indices_bottom, indices_top = vq_vae.encode(d)
+                        _, _, indices_bottom, indices_top = vae.encode(d)
                         if stage == "bottom":
                             indices = indices_bottom.cpu().detach().numpy().astype(np.uint16).ravel()
                         else:
@@ -461,8 +329,6 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
 
                         counts_to_add = np.bincount(indices, minlength=num_emb[stage])
                         counts = np.add(counts, counts_to_add)
-
-                # plt.hist(indices, bins=np.arange(num_emb[stage]), density=True, label=disease_states[j])
 
                 # Normalize counts
                 histograms[stage][j] = np.divide(counts, np.sum(counts))
@@ -514,7 +380,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                     plt.pause(2)
                     plt.close()
 
-    else:
+    elif mode == Mode.vq_vae:
         histograms = np.zeros((levels, num_emb), dtype=np.float64)
 
         # Plot overlap of histograms
@@ -537,17 +403,15 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                     d = d.permute(0, 3, 1, 2).float().to(device)
 
                     if mode == Mode.vq_vae_2:
-                        _, _, indices_bottom, indices_top = vq_vae.encode(d)
+                        _, _, indices_bottom, indices_top = vae.encode(d)
                         indices_bottom = indices_bottom.cpu().detach().numpy().astype(np.uint16).ravel()
                         counts_to_add = np.bincount(indices_bottom, minlength=num_emb)
                         counts = np.add(counts, counts_to_add)
                     else:
-                        _, indices = vq_vae.encode(d)
+                        _, indices = vae.encode(d)
                         indices = indices.cpu().detach().numpy().astype(np.uint16).ravel()
                         counts_to_add = np.bincount(indices, minlength=num_emb)
                         counts = np.add(counts, counts_to_add)
-
-            # plt.hist(indices, bins=np.arange(num_emb), density=True, label=disease_states[j])
 
             # Normalize counts
             histograms[j] = np.divide(counts, np.sum(counts))
@@ -559,9 +423,6 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
         hist_intersection = np.amin(histograms, axis=0)
 
         for j, hist in enumerate(histograms):
-            # Sort indices of embedded vectors regarding best order
-            hist = hist[best_order]
-
             plt.bar(np.arange(num_emb), hist)
             plt.title(f"Percentaged Frequencies - \'{disease_states[j]}\'",
                       fontsize=13,
@@ -575,7 +436,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
             plt.pause(2)
             plt.close()
 
-            plt.bar(np.arange(num_emb), np.subtract(hist, hist_intersection[best_order]))
+            plt.bar(np.arange(num_emb), np.subtract(hist, hist_intersection))
             plt.title(f"Percentaged Frequencies - Difference - \'{disease_states[j]}\' ",
                       fontsize=13,
                       fontweight='bold'
@@ -589,7 +450,7 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
             plt.close()
 
             if j != 0:
-                plt.bar(np.arange(num_emb), np.subtract(hist[best_order], histograms[0][best_order]))
+                plt.bar(np.arange(num_emb), np.subtract(hist, histograms[0]))
                 plt.title(f"Percentaged Frequencies - Difference to No DR group - \'{disease_states[j]}\'",
                           fontsize=13,
                           fontweight='bold'
@@ -601,12 +462,5 @@ def visualize_latent_space(test_data, img_folder, csv, vq_vae,
                 plt.show(block=False)
                 plt.pause(2)
                 plt.close()
-
-
-
-
-
-
-
 
 
