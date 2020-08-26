@@ -90,9 +90,12 @@ def visualize_latent_space(img_folder, csv, vae,
         num_emb_top = num_emb["top"]
         emb_dim_top = emb_dim["top"]
         encodings_bottom = torch.zeros((data_size, size_latent_space["bottom"]*emb_dim_bottom))
+        indices_bottom = torch.zeros((data_size, size_latent_space["bottom"]))
         encodings_top = torch.zeros((data_size, size_latent_space["top"]*emb_dim_top))
+        indices_top = torch.zeros((data_size, size_latent_space["top"]*emb_dim_top))
     elif mode == Mode.vq_vae_2:
         encodings = torch.zeros((data_size, size_latent_space*emb_dim))
+        indices = torch.zeros((data_size, size_latent_space))
     elif mode == Mode.vae:
         encodings = torch.zeros((data_size, z_dim))
 
@@ -105,12 +108,16 @@ def visualize_latent_space(img_folder, csv, vae,
         for i in tqdm(range(n_batches)):
             data = test_data[i*batch_size:(i+1)*batch_size].to(device)
             if mode == Mode.vq_vae_2:
-                z_q_bottom, z_q_top, indices_bottom, indices_top = vae.encode((data))
+                z_q_bottom, z_q_top, indices_bottom_batch, indices_top_batch = vae.encode((data))
+
                 encodings_bottom[i:i + data.size(0)] = z_q_bottom.reshape(data.size(0), size_latent_space["bottom"] * emb_dim_bottom)
+                indices_bottom[i:i + data.size(0)] = indices_bottom_batch.reshape(data.size(0), size_latent_space["bottom"])
                 encodings_top[i:i + data.size(0)] = z_q_top.reshape(data.size(0), size_latent_space["top"] * emb_dim_top)
+                indices_top[i:i + data.size(0)] = indices_top_batch.reshape(data.size(0), size_latent_space["top"])
             elif mode == Mode.vq_vae:
-                z_q, indices = vae.encode((data))
+                z_q, indices_batch = vae.encode((data))
                 encodings[i:i + data.size(0)] = z_q.reshape(data.size(0), size_latent_space * emb_dim)
+                indices[i:i + data.size(0)] = indices_batch.reshape(data.size(0), size_latent_space)
             elif mode == Mode.vae:
                 encodings[i:i + data.size(0)] = vae.encode(data)
 
@@ -121,7 +128,9 @@ def visualize_latent_space(img_folder, csv, vae,
 
     if mode == Mode.vq_vae_2:
         encodings_bottom = encodings_bottom.cpu().detach().numpy()
+        indices_bottom = encodings_bottom.cpu().detach().numpy()
         encodings_top = encodings_top.cpu().detach().numpy()
+        indices_top = encodings_top.cpu().detach().numpy()
     else:
         encodings = encodings.cpu().detach().numpy()
 
@@ -129,6 +138,7 @@ def visualize_latent_space(img_folder, csv, vae,
     for i in range(levels):
         patches.append(mpatches.Patch(color=colormap[i], label=f'{disease_states[i]}'))
 
+    print(encodings_bottom.is_cuda)
     makedirs(f"{network_dir}/outlier", exist_ok=True)
     for m in range(2):
         """

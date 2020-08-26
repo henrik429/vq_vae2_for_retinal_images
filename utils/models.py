@@ -601,7 +601,7 @@ class classifier(nn.Module):
         self.fc_layer = nn.Linear(size_flatten_encodings, num_targets)
 
     def forward(self, x):
-        return torch.sigmoid(self.fc_layer(x))
+        return torch.softmax(self.fc_layer(x), dim=-1)
 
 
 if __name__ == '__main__':

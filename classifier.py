@@ -9,15 +9,51 @@ from tensorboardX import SummaryWriter
 from matplotlib import pyplot as plt
 from sklearn.metrics import roc_curve, roc_auc_score, precision_recall_curve, average_precision_score
 from scipy.interpolate import UnivariateSpline
+from torch import nn
+from torch.utils.data import DataLoader
 
 from utils.utils import setup
 from utils.models import VAE, VQ_VAE, VQ_VAE_2, Mode, classifier
 
+def load_data(img_folder, maxdegree = -20):
+    image_list = os.listdir(img_folder)
+    try:
+        image_list.remove(".snakemake_timestamp")
+    except ValueError:
+        pass
+
+    angles = [x for x in range(-maxdegree, -9)]
+    angles.extend([x for x in range(10, maxdegree + 1)])
+    angles.extend([x for x in range(-9, 10)])
+
+    data = []
+    targets = []
+    print("Load train data and generate their targets...")
+    for idx, jpg in tqdm(enumerate(image_list)):
+        original_jpg = jpg
+        jpg = jpg.replace("_flipped", "")
+        jpg = jpg.replace(".jpeg", "")
+        jpg = jpg.replace(".jpg", "")
+        for angle in angles:
+            jpg = jpg.replace("_rot_%i" % angle, "")
+
+        row_number = csv_df.loc[csv_df['image'] == jpg].index[0]
+        level = csv_df.iloc[row_number].at['level']
+        target = np.zeros(levels)
+        target[level] = 1.0
+        targets.append(target)
+        im = io.imread(train_path + original_jpg)
+        data.append(im)
+
+    data = torch.tensor(data).permute(0, 3, 1, 2).float()
+    targets = torch.tensor(targets).float()
+    return data, targets
 
 if __name__ == "__main__":
-
     FLAGS, logger = setup(running_script="./utils/models.py", config="./config.json")
     train_path = FLAGS.valid
+    valid_path = FLAGS.input
+
     device = FLAGS.device if torch.cuda.is_available() else "cpu"
     mode = Mode.vq_vae if FLAGS.mode == 1 else Mode.vq_vae_2
     maxdegree = FLAGS.maxdegree
@@ -28,15 +64,8 @@ if __name__ == "__main__":
     batch_size = FLAGS.batch_size
     os.makedirs(f"{network_dir}/classifier/", exist_ok=True)
 
-    image_list = os.listdir(train_path)
-
-    try:
-        image_list.remove(".snakemake_timestamp")
-    except ValueError:
-        pass
-
     test_path = FLAGS.test
-    first_image = io.imread(train_path + image_list[0])
+    first_image = io.imread(test_path + os.listdir(test_path)[0])
     image_size = first_image.shape[1]
     reduction_factor = image_size // FLAGS.size_latent_space
 
@@ -79,31 +108,10 @@ if __name__ == "__main__":
     vae.to(device=device)
     vae.eval()
 
-    angles = [x for x in range(-maxdegree, -9)]
-    angles.extend([x for x in range(10, maxdegree + 1)])
-    angles.extend([x for x in range(-9, 10)])
+    data, targets = load_data(train_path, maxdegree=maxdegree)
+    valid_data, valid_targets = load_data(valid_path, maxdegree=maxdegree)
+    valid_data = DataLoader(valid_data, batch_size=batch_size,  drop_last=False)
 
-    data = []
-    targets = []
-    print("Load train data and generate their targets...")
-    for idx, jpg in tqdm(enumerate(image_list)):
-        original_jpg = jpg
-        jpg = jpg.replace("_flipped", "")
-        jpg = jpg.replace(".jpeg", "")
-        jpg = jpg.replace(".jpg", "")
-        for angle in angles:
-            jpg = jpg.replace("_rot_%i" % angle, "")
-
-        row_number = csv_df.loc[csv_df['image'] == jpg].index[0]
-        level = csv_df.iloc[row_number].at['level']
-        target = np.zeros(levels)
-        target[level] = 1.0
-        targets.append(target)
-        im = io.imread(train_path + original_jpg)
-        data.append(im)
-
-    data = torch.tensor(data).permute(0, 3, 1, 2).float()
-    targets = torch.tensor(targets).float()
     data_size = targets.shape[0]
     n_batches = data_size//batch_size
 
@@ -114,11 +122,14 @@ if __name__ == "__main__":
     else:
         predictor = classifier(size_flatten_encodings=FLAGS.z_dim, num_targets=5).to(device)
 
-    kwargs = {"lr":5e-5}
-    optimizer = torch.optim.Adam(predictor.parameters(), **kwargs)
+    learning_rate = 5e-5
+    optimizer = torch.optim.Adam(predictor.parameters(), lr=learning_rate)
+    criterion = nn.BCELoss().to(device=device)
     lossarray = []
-    n_epochs = 1000
+    n_epochs = 3
     writer = SummaryWriter(f"{network_dir}/classifier_tensorboard/")
+
+    valid_iter = iter(valid_data)
     print("Start Training")
     for epoch in tqdm(range(n_epochs)):
         for i in range(n_batches):
@@ -133,13 +144,38 @@ if __name__ == "__main__":
             encodings = encodings.reshape((encodings.shape[0], np.prod(encodings.shape[1:])))
             optimizer.zero_grad()
             predictions = predictor(encodings)
-            loss = F.binary_cross_entropy(predictions, targets[i * batch_size:(i + 1) * batch_size].to(device))
+            #loss = F.binary_cross_entropy(predictions, targets[i * batch_size:(i + 1) * batch_size].to(device))
+            loss = criterion(predictions, targets[i * batch_size:(i + 1) * batch_size].to(device))
             loss.backward()
             optimizer.step()
 
-            if i % 100 == 0:  # append loss every 10 batches
+            if i < 2:
+                print(predictions)
+                print(targets[i * batch_size:(i + 1) * batch_size])
+            if i % 10 == 0:  # append loss every 10 batches
                 lossarray.append(loss.item())
                 writer.add_scalar("classification loss", loss.item(), global_step=batch_size*epoch+i)
+
+            # valid step
+            try:
+                vdata, = next(valid_iter)
+            except StopIteration:
+                valid_iter = iter(valid_data)
+                vdata, = next(valid_iter)
+
+            if mode == Mode.vq_vae:
+                encodings, _ = vae.encode(vdata)
+            elif mode == Mode.vq_vae_2:
+                encodings, _, _, _ = vae.encode(vdata)
+            else:
+                encodings, _, _ = vae.encode(vdata)
+
+            encodings = encodings.reshape((encodings.shape[0], np.prod(encodings.shape[1:])))
+            predictions = predictor(encodings)
+            #loss = F.binary_cross_entropy(predictions, targets[i * batch_size:(i + 1) * batch_size].to(device))
+            loss = criterion(predictions, valid_targets[i * batch_size:(i + 1) * batch_size].to(device))
+            if i % 10 == 0:  # append loss every 10 batches
+                writer.add_scalar("valid loss", loss.item(), global_step=batch_size*epoch+i)
 
     x = np.arange(len(lossarray))
     spl = UnivariateSpline(x, lossarray)
@@ -148,43 +184,16 @@ if __name__ == "__main__":
     plt.savefig(f"{network_dir}/classifier/loss_curve.png")
 
     print("Test classifier")
-    image_list = os.listdir(train_path)
-    try:
-        image_list.remove(".snakemake_timestamp")
-    except ValueError:
-        pass
-
-    image_list = image_list
-    first_image = io.imread(train_path + image_list[0])
-    W, H = first_image.shape[:2]
-    data = []
-    targets = []
-
-    print("Load test data and generate their targets...")
-    for idx, jpg in tqdm(enumerate(image_list)):
-        original_jpg = jpg
-        jpg = jpg.replace("_flipped", "")
-        jpg = jpg.replace(".jpeg", "")
-        jpg = jpg.replace(".jpg", "")
-        for angle in angles:
-            jpg = jpg.replace("_rot_%i" % angle, "")
-
-        row_number = csv_df.loc[csv_df['image'] == jpg].index[0]
-        level = csv_df.iloc[row_number].at['level']
-        target = np.zeros(levels)
-        target[level] = 1.0
-        targets.append(target)
-        im = io.imread(train_path + original_jpg)
-        data.append(im)
-
-    data = torch.tensor(data).permute(0, 3, 1, 2).float()
+    data, targets = load_data(test_path, maxdegree=maxdegree)
     test_targets = torch.tensor(targets).float()
     targets = np.asarray(targets)
     data_size = targets.shape[0]
     n_batches = data_size // batch_size
+    targets = targets[:n_batches*batch_size]
 
     correct = 0
     total = 0
+    outputs = np.zeros_like(targets)
     with torch.no_grad():
         for i in range(n_batches):
             test_data = data[i * batch_size:(i + 1) * batch_size].to(device)
@@ -197,19 +206,26 @@ if __name__ == "__main__":
 
             encodings = encodings.reshape((encodings.shape[0], np.prod(encodings.shape[1:])))
             predictions = predictor(encodings)
+            outputs[i * batch_size:(i + 1) * batch_size] = predictions.cpu().detach().numpy()
             _, predicted = torch.max(predictions.data, 1)
+
             total += batch_size
             _, batch_targets = torch.max(test_targets[i * batch_size:(i + 1) * batch_size], 1)
             batch_targets.to(device)
-            for i in range(batch_size):
-                if predicted[i] == batch_targets[i]:
+            if i < 5:
+                print(predicted)
+                print(batch_targets)
+            for j in range(batch_size):
+                if predicted[j] == batch_targets[j]:
                     correct += 1
 
     print('Accuracy of the network on the %i test images: %d %%' % (data_size, 100 * correct / total))
-    assert predictions.shape == targets.shape
+
     # ROC-Curve/AUC
-    outputs = predictions.cpu().detach().numpy()
-    targets = targets.float().numpy()
+    outputs.astype(np.float)
+    targets = targets.astype(np.float)
+    assert outputs.shape == targets.shape
+
     colors = ['navy', 'green', 'orange', 'red', 'yellow']
 
     tpr = dict()  # Sensitivity/False Positive Rate
@@ -225,7 +241,7 @@ if __name__ == "__main__":
     plt.step(tpr['micro'], fpr['micro'], where='post')
     plt.xlabel('False Positive Rate / Sensitivity', fontsize=11)
     plt.ylabel('True Negative Rate / (1 - Specifity)', fontsize=11)
-    plt.ylim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
     plt.xlim([0.0, 1.0])
     plt.title(
         'AUC score, micro-averaged over all classes: AP={0:0.2f}'
@@ -320,6 +336,6 @@ if __name__ == "__main__":
     plt.xlabel('Recall', fontsize=11)
     plt.ylabel('Precision', fontsize=11)
     plt.title('Precision-Recall curve of all features')
-    plt.legend(lines, labels, loc=(0, -.38), prop=dict(size=9))
+    plt.legend(lines, labels, loc=(0, 0), prop=dict(size=9))
     plt.show()
     plt.savefig(f'{network_dir}/classifier/PR_curve_of_all_features.jpg')

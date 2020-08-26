@@ -2,7 +2,7 @@
     "N_AUGMENTATION": 0,
     "FLIP": 0,
     "MAX_ROTATION_ANGLE": 14,
-    "NETWORKNAME": "small_bottom_vq_vae2_256",
+    "NETWORKNAME": "ba_vq_vae256",
     "PATH_PREFIX": ".",
     "PORT": 1244,
     "RESIZE": [256, 256],
