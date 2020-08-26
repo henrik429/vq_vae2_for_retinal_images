@@ -63,14 +63,14 @@ if __name__ == "__main__":
         hidden_channels=FLAGS.hidden_channels,
         num_emb=num_emb,
         emb_dim=emb_dim,
-        z_dim=FLAGS.z_dim,
+        z_dim=FLAGS.zdim,
         image_size=image_size,
         encoding_channels=FLAGS.encoding_channels,
         optimizer=torch.optim.Adam,
         optimizer_kwargs=None,
         max_epochs=FLAGS.maxepochs,
         device=device,
-        network_dir = network_dir,
+        network_dir=network_dir,
         network_name=FLAGS.network_name,
         report_interval=FLAGS.reportinterval,
         checkpoint_interval=FLAGS.checkpointinterval,
@@ -88,14 +88,6 @@ if __name__ == "__main__":
 
     os.system(f"cp utils/models.py {network_dir}/models.py ")
     os.system(f"cp config.json {network_dir}/config.json ")
-
-    """
-    for param in vq_vae.vq_vae.bottom_encoder.cnn:
-        try:
-            print(param.weight)
-        except AttributeError:
-            break
-    """
 
     os.makedirs(f"{network_dir}/generated_train_images", exist_ok=True)
     os.makedirs(f"{network_dir}/generated_valid_images", exist_ok=True)
