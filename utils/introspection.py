@@ -92,7 +92,7 @@ def visualize_latent_space(img_folder, csv, vae,
         encodings_bottom = torch.zeros((data_size, size_latent_space["bottom"]*emb_dim_bottom))
         indices_bottom = torch.zeros((data_size, size_latent_space["bottom"]))
         encodings_top = torch.zeros((data_size, size_latent_space["top"]*emb_dim_top))
-        indices_top = torch.zeros((data_size, size_latent_space["top"]*emb_dim_top))
+        indices_top = torch.zeros((data_size, size_latent_space["top"]))
     elif mode == Mode.vq_vae_2:
         encodings = torch.zeros((data_size, size_latent_space*emb_dim))
         indices = torch.zeros((data_size, size_latent_space))
@@ -128,9 +128,9 @@ def visualize_latent_space(img_folder, csv, vae,
 
     if mode == Mode.vq_vae_2:
         encodings_bottom = encodings_bottom.cpu().detach().numpy()
-        indices_bottom = encodings_bottom.cpu().detach().numpy()
+        indices_bottom = indices_bottom.cpu().detach().numpy()
         encodings_top = encodings_top.cpu().detach().numpy()
-        indices_top = encodings_top.cpu().detach().numpy()
+        indices_top = indices_top.cpu().detach().numpy()
     else:
         encodings = encodings.cpu().detach().numpy()
 
@@ -138,7 +138,6 @@ def visualize_latent_space(img_folder, csv, vae,
     for i in range(levels):
         patches.append(mpatches.Patch(color=colormap[i], label=f'{disease_states[i]}'))
 
-    print(encodings_bottom.is_cuda)
     makedirs(f"{network_dir}/outlier", exist_ok=True)
     for m in range(2):
         """
@@ -169,6 +168,8 @@ def visualize_latent_space(img_folder, csv, vae,
 
                 encodings_bottom = np.delete(encodings_bottom, pos_to_delete, axis=0)
                 encodings_top = np.delete(encodings_top, pos_to_delete, axis=0)
+                indices_bottom = np.delete(indices_bottom, pos_to_delete, axis=0)
+                indices_top = np.delete(indices_top, pos_to_delete, axis=0)
                 targets = np.delete(targets, pos_to_delete, axis=0)
 
                 clusterable_embedding = UMAP(
@@ -212,8 +213,10 @@ def visualize_latent_space(img_folder, csv, vae,
                     os.system(f"cp {img_folder}/{jpg_list[i]} {network_dir}/outlier/{jpg_list[i]}")
                     print(jpg_list[i])
 
-                encodings_top = np.delete(encodings_top, pos_to_delete, axis=0)
                 encodings_bottom = np.delete(encodings_bottom, pos_to_delete, axis=0)
+                encodings_top = np.delete(encodings_top, pos_to_delete, axis=0)
+                indices_bottom = np.delete(indices_bottom, pos_to_delete, axis=0)
+                indices_top = np.delete(indices_top, pos_to_delete, axis=0)
                 targets = np.delete(targets, pos_to_delete, axis=0)
 
                 clusterable_embedding = UMAP(
@@ -264,6 +267,8 @@ def visualize_latent_space(img_folder, csv, vae,
                     print(jpg_list[i])
 
                 encodings = np.delete(encodings, pos_to_delete, axis=0)
+                if mode == Mode.vq_vae:
+                    indices = np.delete(indices, pos_to_delete, axis=0)
                 targets = np.delete(targets, pos_to_delete, axis=0)
 
                 clusterable_embedding = UMAP(
@@ -289,19 +294,20 @@ def visualize_latent_space(img_folder, csv, vae,
                 plt.show()
                 plt.close()
 
-    data = [[] for _ in range(levels)]
-    print("Generate data for histograms...")
-    for i, jpg in tqdm(enumerate(jpg_list)):
-        saved_jpg = jpg
-        jpg = jpg.replace("_flipped", "")
-        jpg = jpg.replace(".jpeg", "")
-        jpg = jpg.replace(".jpg", "")
-        for angle in angles:
-            jpg = jpg.replace("_rot_%i" % angle, "")
+    if not mode == Mode.vae:
+        data = [[] for _ in range(levels)]
+        print("Generate data for histograms...")
+        for i, jpg in tqdm(enumerate(jpg_list)):
+            saved_jpg = jpg
+            jpg = jpg.replace("_flipped", "")
+            jpg = jpg.replace(".jpeg", "")
+            jpg = jpg.replace(".jpg", "")
+            for angle in angles:
+                jpg = jpg.replace("_rot_%i" % angle, "")
 
-        row_number = csv_df.loc[csv_df['image'] == jpg].index[0]
-        level = csv_df.iloc[row_number].at['level']
-        data[level].append(io.imread(img_folder + saved_jpg))
+            row_number = csv_df.loc[csv_df['image'] == jpg].index[0]
+            level = csv_df.iloc[row_number].at['level']
+            data[level].append(io.imread(img_folder + saved_jpg))
 
     """
     Split test data in specific levels and build histograms over these groups.

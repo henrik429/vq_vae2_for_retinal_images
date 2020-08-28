@@ -417,7 +417,7 @@ class VAE(nn.Module):
 
 class VQ_VAE_Training:
     """
-    VQ-VAE setup.
+    Training setup.
     """
     def __init__(self, data, valid=None,
                  mode=Mode.vq_vae,
@@ -601,7 +601,7 @@ class classifier(nn.Module):
         self.fc_layer = nn.Linear(size_flatten_encodings, num_targets)
 
     def forward(self, x):
-        return torch.softmax(self.fc_layer(x), dim=-1)
+        return torch.sigmoid(self.fc_layer(x))
 
 
 if __name__ == '__main__':

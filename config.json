@@ -25,7 +25,7 @@
   },
   "-mode": {
     "short": "-mode",
-    "value": 2,
+    "value": 1,
     "help": "VQ-VAE (1) or VQ-VAE-2 (2) or VAE (3)",
     "type": "int"
   },
@@ -43,7 +43,7 @@
   },
   "-size_latent_space_bottom": {
     "short": "-size_bottom",
-    "value": 16,
+    "value": 32,
     "help": "Must be powered by 2.",
     "type": "int"
   },
@@ -85,7 +85,7 @@
   },
     "-device": {
     "short": "-dv",
-    "value": "cuda:4",
+    "value": "cuda:3",
     "help": "Device to work on",
     "type": "str"
   },
@@ -109,13 +109,13 @@
   },
     "-hidden_channels": {
     "short": "-hc",
-    "value": 120,
+    "value": 100,
     "help": "Number of hidden_channels",
     "type": "int"
   },
     "-num_emb": {
     "short": "-K",
-    "value": 1000,
+    "value": 500,
     "help": "Number of embedded vectors (in case of vq-vae)",
     "type": "int"
   },

@@ -45,6 +45,12 @@ rule visualization:
 rule classifier:
     input:
         expand("{port}/fid.done", port = config['PORT']),
+        train_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/training/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
+                 n_augmentation = config['N_AUGMENTATION'],
+                 maxdegree = config['MAX_ROTATION_ANGLE'],
+                 resize1 = config['RESIZE'][0],
+                 resize2 = config['RESIZE'][1],
+                 flip = config['FLIP']),
         test_data=expand("/data/analysis/ag-reils/ag-reils-shared-students/henrik/data/processed/testing/n-augmentation_{n_augmentation}_maxdegree_{maxdegree}_resize_{resize1}_{resize2}_flip_{flip}/kaggle/",
              n_augmentation = config['N_AUGMENTATION'],
              maxdegree = config['MAX_ROTATION_ANGLE'],
@@ -61,7 +67,7 @@ rule classifier:
     output:
         touch(expand("{port}/classifier.done", port = config['PORT']))
     run:
-        shell("python classifier.py -t {input.test_data} -v {input.valid_data} -csv {input.csv} -pp {path_prefix} -nn {networkname} -md {maxdegree}")
+        shell("python classifier.py -i {input.train_data} -t {input.test_data} -v {input.valid_data} -csv {input.csv} -pp {path_prefix} -nn {networkname} -md {maxdegree}")
 
 
 rule calculate_fid:

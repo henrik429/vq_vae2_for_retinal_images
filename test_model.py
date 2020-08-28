@@ -41,7 +41,7 @@ if __name__ == "__main__":
         emb_dim = {"top": FLAGS.emb_dim_top, "bottom": FLAGS.emb_dim_bottom}
         size_latent_space = {"top": FLAGS.size_latent_space_top ** 2,
                              "bottom": FLAGS.size_latent_space_bottom ** 2}
-        reduction_factor = {"top": image_size // FLAGS.size_latent_space_bottom // FLAGS.size_latent_space_top,
+        reduction_factor = {"top": FLAGS.size_latent_space_bottom // FLAGS.size_latent_space_top,
                             "bottom": image_size // FLAGS.size_latent_space_bottom}
 
         vae = VQ_VAE_2 (

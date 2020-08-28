@@ -50,9 +50,8 @@ if __name__ == "__main__":
         emb_dim = {"top": FLAGS.emb_dim_top, "bottom": FLAGS.emb_dim_bottom}
         size_latent_space = {"top": FLAGS.size_latent_space_top ** 2,
                              "bottom": FLAGS.size_latent_space_bottom ** 2}
-        reduction_factor = {"top": image_size // FLAGS.size_latent_space_bottom // FLAGS.size_latent_space_top,
+        reduction_factor = {"top": FLAGS.size_latent_space_bottom // FLAGS.size_latent_space_top,
                             "bottom": image_size // FLAGS.size_latent_space_bottom}
-
 
     vq_vae = VQ_VAE_Training(
         train_data,
@@ -63,7 +62,7 @@ if __name__ == "__main__":
         hidden_channels=FLAGS.hidden_channels,
         num_emb=num_emb,
         emb_dim=emb_dim,
-        z_dim=FLAGS.zdim,
+        z_dim=FLAGS.z_dim,
         image_size=image_size,
         encoding_channels=FLAGS.encoding_channels,
         optimizer=torch.optim.Adam,

@@ -37,13 +37,17 @@ def load_data(img_folder, maxdegree = -20):
         for angle in angles:
             jpg = jpg.replace("_rot_%i" % angle, "")
 
-        row_number = csv_df.loc[csv_df['image'] == jpg].index[0]
+        try:
+            row_number = csv_df.loc[csv_df['image'] == jpg].index[0]
+        except IndexError:
+            continue
         level = csv_df.iloc[row_number].at['level']
         target = np.zeros(levels)
         target[level] = 1.0
         targets.append(target)
-        im = io.imread(train_path + original_jpg)
+        im = io.imread(img_folder + original_jpg)
         data.append(im)
+
 
     data = torch.tensor(data).permute(0, 3, 1, 2).float()
     targets = torch.tensor(targets).float()
@@ -85,7 +89,7 @@ if __name__ == "__main__":
         emb_dim = {"top": FLAGS.emb_dim_top, "bottom": FLAGS.emb_dim_bottom}
         size_latent_space = {"top": FLAGS.size_latent_space_top ** 2,
                              "bottom": FLAGS.size_latent_space_bottom ** 2}
-        reduction_factor = {"top": image_size // FLAGS.size_latent_space_bottom // FLAGS.size_latent_space_top,
+        reduction_factor = {"top": FLAGS.size_latent_space_bottom // FLAGS.size_latent_space_top,
                             "bottom": image_size // FLAGS.size_latent_space_bottom}
         vae = VQ_VAE_2(
             hidden_channels=FLAGS.hidden_channels,
@@ -111,6 +115,7 @@ if __name__ == "__main__":
     data, targets = load_data(train_path, maxdegree=maxdegree)
     valid_data, valid_targets = load_data(valid_path, maxdegree=maxdegree)
     valid_data = DataLoader(valid_data, batch_size=batch_size,  drop_last=False)
+    valid_targets = DataLoader(valid_targets, batch_size=batch_size,  drop_last=False)
 
     data_size = targets.shape[0]
     n_batches = data_size//batch_size
@@ -130,6 +135,7 @@ if __name__ == "__main__":
     writer = SummaryWriter(f"{network_dir}/classifier_tensorboard/")
 
     valid_iter = iter(valid_data)
+    valid_targets_iter = iter(valid_targets)
     print("Start Training")
     for epoch in tqdm(range(n_epochs)):
         for i in range(n_batches):
@@ -149,7 +155,7 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-            if i < 2:
+            if i > 0:
                 print(predictions)
                 print(targets[i * batch_size:(i + 1) * batch_size])
             if i % 10 == 0:  # append loss every 10 batches
@@ -158,10 +164,13 @@ if __name__ == "__main__":
 
             # valid step
             try:
-                vdata, = next(valid_iter)
+                vdata = next(valid_iter).to(device)
+                vtargets= next(valid_targets_iter).to(device)
             except StopIteration:
                 valid_iter = iter(valid_data)
-                vdata, = next(valid_iter)
+                vdata = next(valid_iter).to(device)
+                valid_targets_iter = iter(valid_targets)
+                vtargets = next(valid_targets_iter).to(device)
 
             if mode == Mode.vq_vae:
                 encodings, _ = vae.encode(vdata)
@@ -172,8 +181,7 @@ if __name__ == "__main__":
 
             encodings = encodings.reshape((encodings.shape[0], np.prod(encodings.shape[1:])))
             predictions = predictor(encodings)
-            #loss = F.binary_cross_entropy(predictions, targets[i * batch_size:(i + 1) * batch_size].to(device))
-            loss = criterion(predictions, valid_targets[i * batch_size:(i + 1) * batch_size].to(device))
+            loss = criterion(predictions, vtargets)
             if i % 10 == 0:  # append loss every 10 batches
                 writer.add_scalar("valid loss", loss.item(), global_step=batch_size*epoch+i)
 
