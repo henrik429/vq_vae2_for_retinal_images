@@ -7,6 +7,7 @@ from torchvision.utils import make_grid, save_image
 from enum import IntEnum
 import os
 import numpy as np
+from torch.distributions import Normal
 # from utils.functions import vector_quantization
 
 
@@ -14,6 +15,7 @@ class Mode (IntEnum):
     vq_vae = 1
     vq_vae_2 = 2
     vae = 3
+    custom_vq_vae_2 = 4
 
 
 class Residual_Block(nn.Module):
@@ -217,7 +219,7 @@ class VQ_VAE(nn.Module):
 
         if self.training:
             # Calculate Losses
-            self.reconstruction_loss = F.mse_loss(reconstruction, x)
+            self.reconstruction_loss = F.mse_loss(x, reconstruction)
             self.commmitment_loss = self.commitment_cost * F.mse_loss(z_q.detach(), z_e)
             if self.ema:
                 # Use EMA to update the embedding vectors:
@@ -230,7 +232,7 @@ class VQ_VAE(nn.Module):
         return reconstruction
 
 
-class VQ_VAE_2(nn.Module):
+class CustomVQ_VAE_2(nn.Module):
     def __init__(self, hidden_channels,
                  emb_dim,
                  num_emb,
@@ -326,7 +328,127 @@ class VQ_VAE_2(nn.Module):
 
         if self.training:
             # Calculate Losses
-            self.reconstruction_loss = F.mse_loss(x, reconstruction)
+            self.reconstruction_loss = F.mse_loss(reconstruction, x)
+
+            commmitment_loss_top = F.mse_loss(z_q_top.detach(), z_e_top)
+            commmitment_loss_bottom = F.mse_loss(z_q_bottom.detach(), z_e_bottom)
+            self.commmitment_loss = self.commitment_cost * (commmitment_loss_bottom + commmitment_loss_top)
+
+            if self.ema:
+                self.total_loss = self.reconstruction_loss + self.commmitment_loss
+            else:
+                codebook_loss_top = F.mse_loss(z_q_top, z_e_top.detach())
+                codebook_loss_bottom = F.mse_loss(z_q_bottom, z_e_bottom.detach())
+                self.codebook_loss = codebook_loss_top + codebook_loss_bottom
+
+                self.total_loss = self.reconstruction_loss + self.codebook_loss +  \
+                                  self.commitment_cost * self.commmitment_loss
+        return reconstruction
+
+
+class VQ_VAE_2(nn.Module):
+    def __init__(self, hidden_channels,
+                 emb_dim,
+                 num_emb,
+                 reduction_factor_top=8,
+                 reduction_factor_bottom=4,
+                 training=False,
+                 ema=False,
+                 commitment_cost=0.25,
+                 gamma=0.99,
+                 epsilon=1e-5):
+        super().__init__()
+
+        self.bottom_encoder = AbstractEncoder(in_channels=3, hidden_channels=hidden_channels, reduction_factor=reduction_factor_bottom)
+        self.top_encoder = AbstractEncoder(in_channels=hidden_channels, hidden_channels=hidden_channels, reduction_factor=reduction_factor_top)
+
+        self.top_decoder = AbstractDecoder(hidden_channels=hidden_channels, upscale_factor=reduction_factor_top)
+        self.bottom_decoder = AbstractDecoder(hidden_channels=hidden_channels, upscale_factor=reduction_factor_bottom)
+
+        self.conv_to_emb_dim_top = nn.Conv2d(hidden_channels, emb_dim["top"], kernel_size=1)
+        self.conv_to_emb_dim_bottom = nn.Conv2d(hidden_channels, emb_dim["bottom"], kernel_size=1)
+
+        self.conv_from_emb_dim_top= nn.Conv2d(emb_dim["top"], hidden_channels, kernel_size=1)
+        self.conv_from_emb_dim_bottom = nn.Conv2d(emb_dim["bottom"], hidden_channels, kernel_size=1)
+
+        self.conv_concatenation = nn.Conv2d(hidden_channels*2, hidden_channels, kernel_size=1)
+        self.last_layer = nn.Conv2d(hidden_channels, 3, kernel_size=1)
+
+        # Initialize for both levels an Embedding Space
+        self.num_emb = num_emb
+        self.emb_dim = emb_dim
+
+        self.vector_quantization_top = Vector_Quantization(emb_dim["top"], num_emb["top"],
+                                                           training=training,
+                                                           ema=ema,
+                                                           gamma=gamma,
+                                                           epsilon=epsilon,
+                                                           )
+        self.vector_quantization_bottom = Vector_Quantization(emb_dim["bottom"], num_emb["bottom"],
+                                                              training=training,
+                                                              ema=ema,
+                                                              gamma=gamma,
+                                                              epsilon=epsilon,
+                                                              )
+
+        self.training = training
+        if self.training:
+            self.total_loss = None
+            self.reconstruction_loss = None
+            self.commmitment_loss = None
+            self.commitment_cost = commitment_cost
+            self.ema = ema
+            if not self.ema:
+                self.codebook_loss = None
+
+    def encode(self, x):
+        """
+        Function only used to generate latent space for visualization.
+        :param x: Input Image
+        :return z: Latent Space
+        """
+        z_e_bottom = self.bottom_encoder(x)
+
+        z_e_top = self.top_encoder(z_e_bottom)
+        z_e_top = self.conv_to_emb_dim_top(z_e_top)
+
+        z_e_top, z_q_top, indices_top, z_top_one_hot = self.vector_quantization_top(z_e_top)
+        z_q_top_conv = self.conv_from_emb_dim_top(z_q_top.permute(0, 3, 1, 2).contiguous())
+
+        # Upsample z_q_top by a factor of 2, quantize and concatenate it with z_e_bottom.
+        z_q_top_upsampled = self.top_decoder(z_q_top_conv)
+        z_e_bottom_concat = self.conv_concatenation (torch.cat((z_q_top_upsampled, z_e_bottom), dim=1))
+        z_e_bottom = self.conv_to_emb_dim_bottom(z_e_bottom_concat)
+        z_e_bottom, z_q_bottom, indices_bottom, z_bottom_one_hot = self.vector_quantization_bottom(z_e_bottom)
+
+        return z_q_bottom, z_q_top, indices_bottom, indices_top
+
+    def forward(self, x):
+        """
+        Function only used to generate latent space for visualization.
+        :param x: Input Image
+        :return z: Latent Space
+        """
+        z_e_bottom = self.bottom_encoder(x)
+
+        z_e_top = self.top_encoder(z_e_bottom)
+        z_e_top = self.conv_to_emb_dim_top(z_e_top)
+
+        z_e_top, z_q_top, indices_top, z_top_one_hot = self.vector_quantization_top(z_e_top)
+        z_q_top_conv = self.conv_from_emb_dim_top(z_q_top.permute(0, 3, 1, 2).contiguous())
+
+        # Upsample z_q_top by a factor of 2, quantize and concatenate it with z_e_bottom.
+        z_q_top_upsampled = self.top_decoder(z_q_top_conv)
+        z_e_bottom_concat = self.conv_concatenation (torch.cat((z_q_top_upsampled, z_e_bottom), dim=1))
+        z_e_bottom = self.conv_to_emb_dim_bottom(z_e_bottom_concat)
+        z_e_bottom, z_q_bottom, indices_bottom, z_bottom_one_hot = self.vector_quantization_bottom(z_e_bottom)
+
+        z_q_bottom_conv = self.conv_from_emb_dim_bottom(z_q_bottom.permute(0, 3, 1, 2).contiguous())
+        reconstruction = torch.sigmoid(self.last_layer(self.bottom_decoder(z_q_bottom_conv)))
+
+        if self.training:
+            # Calculate Losses
+            self.reconstruction_loss = F.mse_loss(reconstruction, x)
 
             commmitment_loss_top = F.mse_loss(z_q_top.detach(), z_e_top)
             commmitment_loss_bottom = F.mse_loss(z_q_bottom.detach(), z_e_bottom)
@@ -362,12 +484,12 @@ class VAE(nn.Module):
         self.conv_to_enc_channels = nn.Conv2d(hidden_channels, encoding_channels, kernel_size=1)
 
         self.fc_layer_encoder = nn.Sequential(
-            nn.Linear(encoding_size, 128),
-            nn.BatchNorm1d(128),
+            nn.Linear(encoding_size, 256),
+            nn.BatchNorm1d(256),
             nn.ReLU()
         )
-        self.mean = nn.Linear(128, z_dim)
-        self.logvar = nn.Linear(128, z_dim)
+        self.mean = nn.Linear(256, z_dim)
+        self.logvar = nn.Linear(256, z_dim)
 
         self.fc_layer_decoder = nn.Sequential(
             nn.Linear(z_dim, encoding_size),
@@ -403,16 +525,19 @@ class VAE(nn.Module):
 
         if self.training:
             # Calculate Losses
-            self.reconstruction_loss = F.binary_cross_entropy(reconstruction, x)
-            self.kl_loss = torch.mean(-0.5 * torch.sum(1 + logvar - mean.pow(2) - logvar.exp(), dim = 1), dim = 0)
+            self.reconstruction_loss = F.binary_cross_entropy(reconstruction, x, reduction='sum')
+            self.kl_loss = torch.mean(-0.5 * torch.sum(1 + logvar - mean.pow(2) - logvar.exp(), dim = 1))
             self.total_loss = self.reconstruction_loss + self.kl_weight*self.kl_loss
-
         return reconstruction
 
     def reparametrize(self, mu, logvar):
-        std = torch.exp(0.5 * logvar)
-        eps = torch.randn_like(std)
-        return eps.mul(std).add_(mu)
+        # std = torch.exp(0.5 * logvar)
+        # eps = torch.randn_like(std)
+        # z = eps.mul(std).add_(mu)
+        distribution = Normal(mu, torch.exp(0.5 * logvar))
+        z = distribution.rsample()
+        return z
+
 
 
 class VQ_VAE_Training:
@@ -493,7 +618,8 @@ class VQ_VAE_Training:
                            image_size=image_size,
                            encoding_channels=encoding_channels,
                            reduction_factor=reduction_factor,
-                           z_dim=z_dim)
+                           z_dim=z_dim,
+                           training=training).to(self.device)
 
 
         for name, param in self.vae.named_parameters():
@@ -521,7 +647,7 @@ class VQ_VAE_Training:
                 if not self.vae.ema:
                     self.writer.add_scalar("codebook loss", self.vae.codebook_loss, self.step_id)
                 self.writer.add_scalar("commitment loss", self.vae.commmitment_loss, self.step_id)
-            else:
+            elif self.mode == Mode.vae:
                 self.writer.add_scalar("kl loss", self.vae.kl_loss, self.step_id)
             self.writer.add_scalar("total loss", self.vae.total_loss, self.step_id)
 
@@ -605,14 +731,8 @@ class classifier(nn.Module):
 
 
 if __name__ == '__main__':
-    vae = VAE(hidden_channels=10, image_size=256, encoding_channels=8, reduction_factor=16, z_dim=32)
-    print(vae(torch.rand(4, 3, 256, 256)).shape)
-    """
-    vq_vae = VQ_VAE_2(hidden_channels=10,
-                emb_dim={"top":20, "bottom": 50},
-                num_emb={"top":100, "bottom": 150})
-
-    a = torch.randn((4, 3, 256, 256))
-    reconstruction = vq_vae(a)
-    print(reconstruction.shape)
-    """
+    enc = Encoder(z=32)
+    _, logvar = enc(torch.randn((10, 3, 128, 128)))
+    print(logvar.shape)
+    dec= Decoder(z=32)
+    print(dec(logvar).shape)

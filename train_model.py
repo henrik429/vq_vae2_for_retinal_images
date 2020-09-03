@@ -7,7 +7,7 @@ import torch
 import time
 import numpy as np
 from skimage import io
-from skimage import img_as_float32
+from skimage import img_as_ubyte
 
 from utils.dataloader import Dataloader
 from utils.utils import setup
@@ -37,7 +37,12 @@ if __name__ == "__main__":
         image_size = data.size(2)
         break
 
-    mode = Mode.vq_vae if FLAGS.mode == 1 else Mode.vq_vae_2
+    if FLAGS.mode == 1:
+        mode = Mode.vq_vae
+    elif FLAGS.mode == 2:
+        mode = Mode.vq_vae_2
+    elif FLAGS.mode == 3:
+        mode = Mode.vae
 
     if mode == Mode.vq_vae:
         num_emb=FLAGS.num_emb
@@ -52,6 +57,10 @@ if __name__ == "__main__":
                              "bottom": FLAGS.size_latent_space_bottom ** 2}
         reduction_factor = {"top": FLAGS.size_latent_space_bottom // FLAGS.size_latent_space_top,
                             "bottom": image_size // FLAGS.size_latent_space_bottom}
+    elif mode == Mode.vae:
+        reduction_factor = image_size // FLAGS.size_before_fc
+        num_emb = None
+        emb_dim = None
 
     vq_vae = VQ_VAE_Training(
         train_data,
@@ -120,8 +129,8 @@ if __name__ == "__main__":
                     assert reconstruction.shape == (W, H, 3)
                     if path == input_path:
                         io.imsave(f"{network_dir}/generated_train_images/{image_list[i*batch_size+k]}",
-                                  img_as_float32(reconstruction.numpy()))
+                                  img_as_ubyte(reconstruction.numpy()))
                     else:
                         io.imsave(f"{network_dir}/generated_valid_images/{image_list[i*batch_size+k]}",
-                                  img_as_float32(reconstruction.numpy()))
+                                  img_as_ubyte(reconstruction.numpy()))
 

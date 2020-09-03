@@ -14,7 +14,13 @@ if __name__ == "__main__":
     FLAGS, logger = setup(running_script="./utils/models.py", config="./config.json")
     device = FLAGS.device if torch.cuda.is_available() else "cpu"
     network_dir = f'{FLAGS.path_prefix}/models/{FLAGS.network_name}'
-    mode = Mode.vq_vae if FLAGS.mode == 1 else Mode.vq_vae_2
+
+    if FLAGS.mode == 1:
+        mode = Mode.vq_vae
+    elif FLAGS.mode == 2:
+        mode = Mode.vq_vae_2
+    elif FLAGS.mode == 3:
+        mode = Mode.vae
 
     # Visualization of the latent space
     test_path = FLAGS.test

@@ -145,20 +145,21 @@ if __name__ == "__main__":
 
     num_images = len(os.listdir(gen_train_path))
     batch_size = 32
+    image_size = 128
 
     for path1, path2 in [(gen_train_path, input_path), (gen_valid_path, valid_path)]:
-        generated_images = torch.zeros((num_images, 3, 256, 256))
-        real_images = torch.zeros((num_images, 3, 256, 256))
+        generated_images = torch.zeros((num_images, 3, image_size, image_size))
+        real_images = torch.zeros((num_images, 3, image_size, image_size))
         for i, jpg in enumerate(os.listdir(path1)):
             generated_images[i] = torch.tensor(img_as_float32(io.imread(path1+jpg))).permute(2, 0, 1).float()
             real_images[i] = torch.tensor(img_as_float32(io.imread(path2+jpg))).permute(2, 0, 1).float()
 
-        assert generated_images.shape == (generated_images.shape[0], 3, 256, 256)
+        assert generated_images.shape == (generated_images.shape[0], 3, image_size, image_size)
         assert generated_images.max() <= 1.0
         assert generated_images.min() >= 0.0
         assert generated_images.dtype == torch.float32
 
-        assert real_images.shape == (real_images.shape[0], 3, 256, 256)
+        assert real_images.shape == (real_images.shape[0], 3, image_size, image_size)
         assert real_images.max() <= 1.0
         assert real_images.min() >= 0.0
         assert real_images.dtype == torch.float32

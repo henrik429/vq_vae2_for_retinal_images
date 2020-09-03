@@ -25,7 +25,7 @@
   },
   "-mode": {
     "short": "-mode",
-    "value": 1,
+    "value": 3,
     "help": "VQ-VAE (1) or VQ-VAE-2 (2) or VAE (3)",
     "type": "int"
   },
@@ -47,9 +47,15 @@
     "help": "Must be powered by 2.",
     "type": "int"
   },
+    "-size_before_fc": {
+    "short": "-sbfc",
+    "value": 8,
+    "help": "Must be powered by 2.",
+    "type": "int"
+  },
   "-z_dim": {
     "short": "-z",
-    "value": 128,
+    "value": 1024,
     "help": "Latent vector of the VAE",
     "type": "int"
   },
@@ -109,7 +115,7 @@
   },
     "-hidden_channels": {
     "short": "-hc",
-    "value": 100,
+    "value": 300,
     "help": "Number of hidden_channels",
     "type": "int"
   },

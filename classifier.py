@@ -59,10 +59,16 @@ if __name__ == "__main__":
     valid_path = FLAGS.input
 
     device = FLAGS.device if torch.cuda.is_available() else "cpu"
-    mode = Mode.vq_vae if FLAGS.mode == 1 else Mode.vq_vae_2
     maxdegree = FLAGS.maxdegree
     csv_df = read_csv(FLAGS.csv)
     levels = 5
+
+    if FLAGS.mode == 1:
+        mode = Mode.vq_vae
+    elif FLAGS.mode == 2:
+        mode = Mode.vq_vae_2
+    elif FLAGS.mode == 3:
+        mode = Mode.vae
 
     network_dir = f'{FLAGS.path_prefix}/models/{FLAGS.network_name}'
     batch_size = FLAGS.batch_size
@@ -129,7 +135,7 @@ if __name__ == "__main__":
 
     learning_rate = 5e-5
     optimizer = torch.optim.Adam(predictor.parameters(), lr=learning_rate)
-    criterion = nn.BCELoss().to(device=device)
+    #criterion = nn.BCELoss().to(device=device)
     lossarray = []
     n_epochs = 3
     writer = SummaryWriter(f"{network_dir}/classifier_tensorboard/")
@@ -145,19 +151,19 @@ if __name__ == "__main__":
             elif mode == Mode.vq_vae_2:
                 encodings, _, _, _ = vae.encode(train_data)
             else:
-                encodings, _, _ = vae.encode(train_data)
+                 _, _, encodings = vae.encode(train_data)
 
             encodings = encodings.reshape((encodings.shape[0], np.prod(encodings.shape[1:])))
             optimizer.zero_grad()
             predictions = predictor(encodings)
-            #loss = F.binary_cross_entropy(predictions, targets[i * batch_size:(i + 1) * batch_size].to(device))
-            loss = criterion(predictions, targets[i * batch_size:(i + 1) * batch_size].to(device))
+            loss = F.binary_cross_entropy(predictions, targets[i * batch_size:(i + 1) * batch_size].to(device), reduction='sum')
+            #loss = criterion(predictions, targets[i * batch_size:(i + 1) * batch_size].to(device))
             loss.backward()
             optimizer.step()
 
             if i > 0:
                 print(predictions)
-                print(targets[i * batch_size:(i + 1) * batch_size])
+                #print(targets[i * batch_size:(i + 1) * batch_size])
             if i % 10 == 0:  # append loss every 10 batches
                 lossarray.append(loss.item())
                 writer.add_scalar("classification loss", loss.item(), global_step=batch_size*epoch+i)
@@ -181,9 +187,11 @@ if __name__ == "__main__":
 
             encodings = encodings.reshape((encodings.shape[0], np.prod(encodings.shape[1:])))
             predictions = predictor(encodings)
-            loss = criterion(predictions, vtargets)
+            loss = F.binary_cross_entropy(predictions, vtargets, reduction='sum')
+
+            #loss = criterion(predictions, vtargets)
             if i % 10 == 0:  # append loss every 10 batches
-                writer.add_scalar("valid loss", loss.item(), global_step=batch_size*epoch+i)
+                writer.add_scalar("valid classifier loss", loss.item(), global_step=batch_size*epoch+i)
 
     x = np.arange(len(lossarray))
     spl = UnivariateSpline(x, lossarray)
@@ -210,7 +218,7 @@ if __name__ == "__main__":
             elif mode == Mode.vq_vae_2:
                 encodings, _, _, _ = vae.encode(test_data)
             else:
-                encodings, _, _ = vae.encode(test_data)
+                _, _, encodings = vae.encode(test_data)
 
             encodings = encodings.reshape((encodings.shape[0], np.prod(encodings.shape[1:])))
             predictions = predictor(encodings)

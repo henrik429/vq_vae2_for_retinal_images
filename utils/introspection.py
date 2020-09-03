@@ -93,7 +93,7 @@ def visualize_latent_space(img_folder, csv, vae,
         indices_bottom = torch.zeros((data_size, size_latent_space["bottom"]))
         encodings_top = torch.zeros((data_size, size_latent_space["top"]*emb_dim_top))
         indices_top = torch.zeros((data_size, size_latent_space["top"]))
-    elif mode == Mode.vq_vae_2:
+    elif mode == Mode.vq_vae:
         encodings = torch.zeros((data_size, size_latent_space*emb_dim))
         indices = torch.zeros((data_size, size_latent_space))
     elif mode == Mode.vae:
@@ -119,7 +119,7 @@ def visualize_latent_space(img_folder, csv, vae,
                 encodings[i:i + data.size(0)] = z_q.reshape(data.size(0), size_latent_space * emb_dim)
                 indices[i:i + data.size(0)] = indices_batch.reshape(data.size(0), size_latent_space)
             elif mode == Mode.vae:
-                encodings[i:i + data.size(0)] = vae.encode(data)
+                _, _, encodings[i:i + data.size(0)] = vae.encode(data)
 
             if i < 1:
                 reconstruction = vae(data).cpu().detach()
