@@ -1,0 +1,4 @@
+
+The FID Score of the train data is: 28.970577707899167
+
+The FID Score of the valid data is: 28.665213314704317
