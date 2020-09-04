@@ -316,7 +316,7 @@ if __name__ == "__main__":
     average_precision = dict()
 
     # A "macro-average": quantifying score on all classes jointly
-    precision["macro"], recall["macro"], _ = precision_recall_curve(np.argmax(targets, axis=1), np.argmax(targets, axis=1))    #targets.ravel(), outputs.ravel())
+    precision["macro"], recall["macro"], _ = precision_recall_curve(targets.ravel(), outputs.ravel())
     average_precision["macro"] = average_precision_score(targets, outputs, average="macro")
     print('Average precision score, macro-averaged over all classes: {0:0.2f}'.format(average_precision["macro"]))
     plt.figure()
