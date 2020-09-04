@@ -25,7 +25,7 @@
   },
   "-mode": {
     "short": "-mode",
-    "value": 2,
+    "value": 3,
     "help": "VQ-VAE (1) or VQ-VAE-2 (2) or VAE (3) or custom VQ-VAE-II (4)",
     "type": "int"
   },
@@ -115,7 +115,7 @@
   },
     "-hidden_channels": {
     "short": "-hc",
-    "value": 300,
+    "value": 100,
     "help": "Number of hidden_channels",
     "type": "int"
   },
