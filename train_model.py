@@ -43,6 +43,8 @@ if __name__ == "__main__":
         mode = Mode.vq_vae_2
     elif FLAGS.mode == 3:
         mode = Mode.vae
+    elif FLAGS.mode == 4:
+        mode = Mode.custom_vq_vae_2
 
     if mode == Mode.vq_vae:
         num_emb=FLAGS.num_emb
@@ -50,7 +52,7 @@ if __name__ == "__main__":
         size_latent_space = FLAGS.size_latent_space ** 2
         reduction_factor = image_size // FLAGS.size_latent_space
 
-    elif mode == Mode.vq_vae_2:
+    elif mode == Mode.vq_vae_2 or mode == Mode.custom_vq_vae_2:
         num_emb = {"top": FLAGS.num_emb_top, "bottom": FLAGS.num_emb_bottom}
         emb_dim = {"top": FLAGS.emb_dim_top, "bottom": FLAGS.emb_dim_bottom}
         size_latent_space = {"top": FLAGS.size_latent_space_top ** 2,

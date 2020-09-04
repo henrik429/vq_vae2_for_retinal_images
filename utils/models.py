@@ -601,7 +601,7 @@ class VQ_VAE_Training:
                               gamma=gamma,
                               epsilon=epsilon).to(self.device)
 
-        elif self.mode == Mode.vq_vae_2:
+        elif self.mode == Mode.vq_vae_2 :
             self.vae = VQ_VAE_2(hidden_channels=hidden_channels,
                                 num_emb=num_emb,
                                 emb_dim=emb_dim,
@@ -612,7 +612,17 @@ class VQ_VAE_Training:
                                 commitment_cost=commitment_cost,
                                 gamma=gamma,
                                 epsilon=epsilon).to(self.device)
-
+        elif self.mode == Mode.custom_vq_vae_2:
+            self.vae = VQ_VAE_2(hidden_channels=hidden_channels,
+                                num_emb=num_emb,
+                                emb_dim=emb_dim,
+                                reduction_factor_bottom=reduction_factor["bottom"],
+                                reduction_factor_top=reduction_factor["top"],
+                                training=training,
+                                ema=ema,
+                                commitment_cost=commitment_cost,
+                                gamma=gamma,
+                                epsilon=epsilon).to(self.device)
         elif self.mode == Mode.vae:
             self.vae = VAE(hidden_channels=hidden_channels,
                            image_size=image_size,
@@ -643,11 +653,11 @@ class VQ_VAE_Training:
         if self.verbose:
             self.writer.add_scalar("reconstruction loss", self.vae.reconstruction_loss, self.step_id)
 
-            if self.mode == Mode.vq_vae or self.mode == Mode.vq_vae_2:
+            if not self.mode == Mode.vae:
                 if not self.vae.ema:
                     self.writer.add_scalar("codebook loss", self.vae.codebook_loss, self.step_id)
                 self.writer.add_scalar("commitment loss", self.vae.commmitment_loss, self.step_id)
-            elif self.mode == Mode.vae:
+            else:
                 self.writer.add_scalar("kl loss", self.vae.kl_loss, self.step_id)
             self.writer.add_scalar("total loss", self.vae.total_loss, self.step_id)
 
@@ -727,12 +737,5 @@ class classifier(nn.Module):
         self.fc_layer = nn.Linear(size_flatten_encodings, num_targets)
 
     def forward(self, x):
-        return torch.sigmoid(self.fc_layer(x))
+        return self.fc_layer(x)
 
-
-if __name__ == '__main__':
-    enc = Encoder(z=32)
-    _, logvar = enc(torch.randn((10, 3, 128, 128)))
-    print(logvar.shape)
-    dec= Decoder(z=32)
-    print(dec(logvar).shape)

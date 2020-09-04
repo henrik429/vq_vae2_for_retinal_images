@@ -84,7 +84,7 @@ def visualize_latent_space(img_folder, csv, vae,
     data_size = targets.shape[0]
     n_batches = data_size//batch_size
 
-    if mode == Mode.vq_vae_2:
+    if mode == Mode.vq_vae_2 or mode == Mode.custom_vq_vae_2:
         num_emb_bottom = num_emb["bottom"]
         emb_dim_bottom = emb_dim["bottom"]
         num_emb_top = num_emb["top"]
@@ -107,7 +107,7 @@ def visualize_latent_space(img_folder, csv, vae,
     with torch.no_grad():
         for i in tqdm(range(n_batches)):
             data = test_data[i*batch_size:(i+1)*batch_size].to(device)
-            if mode == Mode.vq_vae_2:
+            if mode == Mode.vq_vae_2 or mode == Mode.custom_vq_vae_2:
                 z_q_bottom, z_q_top, indices_bottom_batch, indices_top_batch = vae.encode((data))
 
                 encodings_bottom[i:i + data.size(0)] = z_q_bottom.reshape(data.size(0), size_latent_space["bottom"] * emb_dim_bottom)
@@ -126,7 +126,7 @@ def visualize_latent_space(img_folder, csv, vae,
                 grid = make_grid(torch.cat((data.cpu()[0:10], reconstruction[0:10]), dim=0), nrow=10)
                 save_image(grid, f"{network_dir}/test_{i}.png", normalize=True)
 
-    if mode == Mode.vq_vae_2:
+    if mode == Mode.vq_vae_2 or mode == Mode.custom_vq_vae_2:
         encodings_bottom = encodings_bottom.cpu().detach().numpy()
         indices_bottom = indices_bottom.cpu().detach().numpy()
         encodings_top = encodings_top.cpu().detach().numpy()
@@ -145,7 +145,7 @@ def visualize_latent_space(img_folder, csv, vae,
         m == 1: encodings = indices
         """
         for n_neighbors in [20, 50, 150]:
-            if mode == Mode.vq_vae_2:
+            if mode == Mode.vq_vae_2 or mode == Mode.custom_vq_vae_2:
                 if m == 1:
                     encodings_bottom = indices_bottom
                     encodings_top = indices_top
@@ -312,7 +312,7 @@ def visualize_latent_space(img_folder, csv, vae,
     """
     Split test data in specific levels and build histograms over these groups.
     """
-    if mode == Mode.vq_vae_2:
+    if mode == Mode.vq_vae_2 or mode == Mode.custom_vq_vae_2:
         histograms = {"bottom": np.zeros((levels, num_emb_bottom), dtype=np.float64),
                       "top": np.zeros((levels, num_emb_top), dtype=np.float64)}
 
@@ -416,7 +416,7 @@ def visualize_latent_space(img_folder, csv, vae,
                 for i, d in enumerate(level_data):
                     d = d.permute(0, 3, 1, 2).float().to(device)
 
-                    if mode == Mode.vq_vae_2:
+                    if mode == Mode.vq_vae_2 or mode == Mode.custom_vq_vae_2:
                         _, _, indices_bottom, indices_top = vae.encode(d)
                         indices_bottom = indices_bottom.cpu().detach().numpy().astype(np.uint16).ravel()
                         counts_to_add = np.bincount(indices_bottom, minlength=num_emb)
