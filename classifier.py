@@ -262,25 +262,25 @@ if __name__ == "__main__":
     fpr = dict()  # True Positive Rate / (1-Specifity)
     auc = dict()
 
-    # A "'macro'-average": quantifying score on all classes jointly
-    tpr["macro"], fpr["macro"], _ = roc_curve(targets.ravel(), outputs.ravel())
-    auc["macro"] = roc_auc_score(targets.ravel(), outputs.ravel(), average='macro')
-    print('AUC score, macro-averaged over all classes: {0:0.2f}'.format(auc['macro']))
+    # A "'micro'-average": quantifying score on all classes jointly
+    tpr["micro"], fpr["micro"], _ = roc_curve(targets.ravel(), outputs.ravel())
+    auc["micro"] = roc_auc_score(targets.ravel(), outputs.ravel(), average='micro')
+    print('AUC score, micro-averaged over all classes: {0:0.2f}'.format(auc['micro']))
 
     plt.figure()
-    plt.step(tpr['macro'], fpr['macro'], where='post')
+    plt.step(tpr['micro'], fpr['micro'], where='post')
     plt.xlabel('False Positive Rate / Sensitivity', fontsize=11)
     plt.ylabel('True Negative Rate / (1 - Specifity)', fontsize=11)
     plt.ylim([0.0, 1.05])
     plt.xlim([0.0, 1.0])
     plt.title(
-        'AUC score, macro-averaged over all classes: AP={0:0.2f}'
-            .format(auc["macro"]), fontsize=13, fontweight='bold')
+        'AUC score, micro-averaged over all classes: AP={0:0.2f}'
+            .format(auc["micro"]), fontsize=13, fontweight='bold')
     plt.show()
-    plt.savefig(f'{network_dir}/classifier/ROC_curve_macro_averaged.png')
+    plt.savefig(f'{network_dir}/classifier/ROC_curve_micro_averaged.png')
     plt.close()
 
-    # Plot of all classes ('macro')
+    # Plot of all classes ('micro')
     for i in range(5):
         tpr[i], fpr[i], _ = roc_curve(targets[:, i], outputs[:, i])
         auc[i] = roc_auc_score(targets[:, i], outputs[:, i])
@@ -289,9 +289,9 @@ if __name__ == "__main__":
     lines = []
     labels = []
 
-    l, = plt.plot(tpr["macro"], fpr["macro"], color='olive', lw=2)
+    l, = plt.plot(tpr["micro"], fpr["micro"], color='olive', lw=2)
     lines.append(l)
-    labels.append('macro-averaged ROC-AUC = {0:0.2f})'.format(auc["macro"]))
+    labels.append('micro-averaged ROC-AUC = {0:0.2f})'.format(auc["micro"]))
     diagnoses = ["No DR", "Mild DR", "Moderate DR", "Severe DR", "Proliferative DR"]
 
     for i, color in zip(range(levels), colors):
@@ -315,24 +315,24 @@ if __name__ == "__main__":
     recall = dict()
     average_precision = dict()
 
-    # A "macro-average": quantifying score on all classes jointly
-    precision["macro"], recall["macro"], _ = precision_recall_curve(targets.ravel(), outputs.ravel())
-    average_precision["macro"] = average_precision_score(targets, outputs, average="macro")
-    print('Average precision score, macro-averaged over all classes: {0:0.2f}'.format(average_precision["macro"]))
+    # A "micro-average": quantifying score on all classes jointly
+    precision["micro"], recall["micro"], _ = precision_recall_curve(targets.ravel(), outputs.ravel())
+    average_precision["micro"] = average_precision_score(targets, outputs, average="micro")
+    print('Average precision score, micro-averaged over all classes: {0:0.2f}'.format(average_precision["micro"]))
     plt.figure()
-    plt.step(recall['macro'], precision['macro'], where='post')
+    plt.step(recall['micro'], precision['micro'], where='post')
     plt.xlabel('Recall', fontsize=11)
     plt.ylabel('Precision', fontsize=11)
     plt.ylim([0.0, 1.05])
     plt.xlim([0.0, 1.0])
     plt.title(
-        'Average precision score, macro-averaged over all classes: AP={0:0.2f}'
-            .format(average_precision["macro"]), fontsize=13, fontweight='bold')
+        'Average precision score, micro-averaged over all classes: AP={0:0.2f}'
+            .format(average_precision["micro"]), fontsize=13, fontweight='bold')
     plt.show()
-    plt.savefig(f'{network_dir}/classifier/PR_curve_macro_averaged.jpg')
+    plt.savefig(f'{network_dir}/classifier/PR_curve_micro_averaged.jpg')
     plt.close()
 
-    # Plot of all classes ('macro')
+    # Plot of all classes ('micro')
     for i in range(levels):
         precision[i], recall[i], _ = precision_recall_curve(targets[:, i], outputs[:, i])
         average_precision[i] = average_precision_score(targets[:, i], outputs[:, i])
@@ -349,10 +349,10 @@ if __name__ == "__main__":
 
     lines.append(l)
     labels.append('iso-f1 curves')
-    l, = plt.plot(recall["macro"], precision["macro"], color='olive', lw=2)
+    l, = plt.plot(recall["micro"], precision["micro"], color='olive', lw=2)
     lines.append(l)
-    labels.append('macro-average Precision-recall (average precision = {0:0.2f}'
-                  ''.format(average_precision["macro"]))
+    labels.append('micro-average Precision-recall (average precision = {0:0.2f}'
+                  ''.format(average_precision["micro"]))
 
     for i, color in zip(range(levels), colors):
         l, = plt.plot(recall[i], precision[i], color=color, lw=1)
