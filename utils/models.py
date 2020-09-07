@@ -696,7 +696,7 @@ class VQ_VAE_Training:
         if not self.training:
             raise Exception("Network can not be trained, if argument 'training' is not True!")
 
-        best_loss = -1
+        best_loss = 10000
         for epoch_id in tqdm(range(self.max_epochs)):
             self.epoch_id = epoch_id
             if self.valid_data is not None:
@@ -708,6 +708,7 @@ class VQ_VAE_Training:
 
                     path = f'{self.network_dir}/{self.network_name}.pth'
                     torch.save(self.vae.state_dict(), path)
+                    best_loss = self.vae.total_loss
 
                 if self.valid_data is not None and self.step_id % self.report_interval == 0:
                     try:
