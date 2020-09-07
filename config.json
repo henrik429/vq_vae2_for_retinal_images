@@ -26,7 +26,7 @@
   "-mode": {
     "short": "-mode",
     "value": 4,
-    "help": "VQ-VAE (1) or VQ-VAE-2 (2) or VAE (3) or custom VQ-VAE-II (4)",
+    "help": "VQ-VAE (1) or VQ-VAE-2 (2) or VAE (3) or customized VQ-VAE-II (4)",
     "type": "int"
   },
   "-size_latent_space": {
