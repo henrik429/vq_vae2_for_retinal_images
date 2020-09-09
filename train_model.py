@@ -95,8 +95,6 @@ if __name__ == "__main__":
     time_start = time.time()
     vq_vae.train()
     print('\nTraining with %i epochs done! Time elapsed: %.2f hours' % (FLAGS.maxepochs, (time.time() - time_start)/360))
-    path = f'{network_dir}/save_network.pth'
-    torch.save(vq_vae.vae.state_dict(), path)
 
     os.system(f"cp utils/models.py {network_dir}/models.py ")
     os.system(f"cp config.json {network_dir}/config.json ")

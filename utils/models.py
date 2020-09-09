@@ -613,7 +613,7 @@ class VQ_VAE_Training:
                                 gamma=gamma,
                                 epsilon=epsilon).to(self.device)
         elif self.mode == Mode.custom_vq_vae_2:
-            self.vae = VQ_VAE_2(hidden_channels=hidden_channels,
+            self.vae = CustomVQ_VAE_2(hidden_channels=hidden_channels,
                                 num_emb=num_emb,
                                 emb_dim=emb_dim,
                                 reduction_factor_bottom=reduction_factor["bottom"],
@@ -630,7 +630,6 @@ class VQ_VAE_Training:
                            reduction_factor=reduction_factor,
                            z_dim=z_dim,
                            training=training).to(self.device)
-
 
         for name, param in self.vae.named_parameters():
             if param.device.type != "cuda":
